@@ -1,6 +1,7 @@
 package lett.malcolm.consciouscalculator.emulator.interfaces;
 
 import java.time.Instant;
+import java.util.Set;
 
 public interface Event {
 	public String guid();
@@ -16,5 +17,25 @@ public interface Event {
 	 */
 	public int size();
 	
+	/**
+	 * Meta-data, used to identify broad categories of events an different scales,
+	 * and to flag state against the event.
+	 * eg: to flag that the event was a request, or that it has been completed.
+	 * @return
+	 */
+	public Set<EventTag> tags();
+	
 	public Object data();
+
+	public void setStrength(double strength);
+
+	public void setTimestamp(Instant timestamp);
+
+	public void setSize(int size);
+
+	public void setGuid(String guid);
+
+	public void setTags(Set<EventTag> tags);
+
+	public void setData(Object data);
 }

@@ -2,6 +2,7 @@ package lett.malcolm.consciouscalculator.emulator;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -20,11 +21,18 @@ public class WorkingMemory {
 	/**
 	 * Stores the event, in order.
 	 * May cause compaction or even loss of lower-strength events.
+	 * 
+	 * If the event GUID is the same as an existing entry, then REPLACES.
+	 * Otherwise ADDs.
 	 * @param event
 	 */
 	public void store(Event event) {
 		// TODO apply strength, compaction, and obsolescence rules
 		
+		Optional<Event> existing = contents.stream().filter(e -> e.guid().equals(event.guid())).findFirst();
+		if (existing.isPresent()) {
+			contents.remove(existing.get());
+		}
 		contents.add(event);
 	}
 

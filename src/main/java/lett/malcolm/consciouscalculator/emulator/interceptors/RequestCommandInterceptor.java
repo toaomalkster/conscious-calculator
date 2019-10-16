@@ -3,18 +3,18 @@ package lett.malcolm.consciouscalculator.emulator.interceptors;
 import java.time.Clock;
 import java.util.Queue;
 
-import lett.malcolm.consciouscalculator.emulator.events.ExpressionEvaluationRequestEvent;
+import lett.malcolm.consciouscalculator.emulator.events.TextRequestEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 
 /**
- * Recognises requests to evaluate an expression within COMMAND.
+ * Recognises that a request has been issued via the command input stream.
  */
-public class ExpressionInputInterceptor implements InputInterceptor {
+public class RequestCommandInterceptor implements InputInterceptor {
 	private Clock clock;
 	
-	public ExpressionInputInterceptor(Clock clock) {
+	public RequestCommandInterceptor(Clock clock) {
 		this.clock = clock;
 	}
 	
@@ -27,19 +27,10 @@ public class ExpressionInputInterceptor implements InputInterceptor {
 	public Event intercept(Queue<Object> stream) {
 		for (Object obj: stream) {
 			String data = (String) obj;
-
-			Object expr = parseExpression(data);
 			
-			if (expr != null) {
-				return new ExpressionEvaluationRequestEvent(clock, expr);
-			}
+			return new TextRequestEvent(clock, data);
 		}
 		return null;
 	}
 
-	// TODO parse to an Expression object
-	private static Object parseExpression(String text) {
-		// TODO
-		return text;
-	}
 }

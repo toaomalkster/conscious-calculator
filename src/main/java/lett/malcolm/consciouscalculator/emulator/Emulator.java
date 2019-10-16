@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.Queue;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
-import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
-import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 
 /**
@@ -21,7 +20,9 @@ import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
  * Where the hosting application uses threads, it needs to serialise all access to the emulated components.
  * 
  * The emulator has only one external input: text based messages can be supplied to it.
- * It also has only one external output: it generates text based messages that can be printed to the console, for example. 
+ * It also has only one external output: it generates text based messages that can be printed to the console, for example.
+ * 
+ * TODO make the Emulator run in its own thread, and carefully synchronize access on the public methods.
  */
 public class Emulator {
 	public static final int DEFAULT_WORKING_MEMORY_MAX_SIZE = 100;
@@ -30,7 +31,7 @@ public class Emulator {
 	private WorkingMemory workingMemory;
 	private List<InputInterceptor> inputInterceptors;
 	private List<Processor> processors;
-	private Queue<String> commandStream = new LinkedList<>();
+	private Queue<Object> commandStream = new LinkedList<>();
 	private Queue<Object> consciousFeedbackStream = new LinkedList<>();
 	
 	// low-level
@@ -52,7 +53,7 @@ public class Emulator {
 	 */
 	public void sendCommand(String text) {
 		commandStream.offer(text);
-		trigger();
+		trigger(true);
 	}
 	
 	/**
@@ -89,18 +90,33 @@ public class Emulator {
 			}
 			
 			// attention
-			attentionAttenuator.act(interceptedEvents, processedEvents);
+			boolean updated = attentionAttenuator.act(interceptedEvents, processedEvents);
 			
 			// run conscious feedback loop
 			// TODO
 			// - generate event from current state of play
 			// - feed back into consciousFeedbackStream
 			// - add another trigger to queue
+			
+			// tick cleanup: consume input queues
+			commandStream.clear();
+			consciousFeedbackStream.clear();
+			
+			if (updated) {
+				trigger();
+			}
 		}
 	}
 	
 	private void trigger() {
 		triggerQueue.offer(new Trigger());
 		controlLoop();
+	}
+
+	private void trigger(boolean runIfNotRunning) {
+		trigger();
+		if (runIfNotRunning) {
+			controlLoop();
+		}
 	}
 }

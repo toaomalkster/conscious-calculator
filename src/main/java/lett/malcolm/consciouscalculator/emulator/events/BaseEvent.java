@@ -2,15 +2,19 @@ package lett.malcolm.consciouscalculator.emulator.events;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
+import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 
 abstract class BaseEvent implements Event {
 	private String guid;
 	private double strength = 0;
 	private Instant timestamp;
 	private int size = 1;
+	private Set<EventTag> tags = new HashSet<>();
 	private Object data;
 			
 	public BaseEvent(Clock clock) {
@@ -37,6 +41,10 @@ abstract class BaseEvent implements Event {
 	public int size() {
 		return size;
 	}
+	
+	public Set<EventTag> tags() {
+		return tags;
+	}
 
 	@Override
 	public Object data() {
@@ -53,6 +61,14 @@ abstract class BaseEvent implements Event {
 
 	public void setSize(int size) {
 		this.size = size;
+	}
+
+	public void setGuid(String guid) {
+		this.guid = guid;
+	}
+
+	public void setTags(Set<EventTag> tags) {
+		this.tags = tags;
 	}
 
 	public void setData(Object data) {
