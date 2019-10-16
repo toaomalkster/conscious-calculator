@@ -8,7 +8,13 @@ public enum EventTag {
 	REQUEST,
 	
 	/**
-	 * The event required some sort of processing, which has been completed.
+	 * The event has been handled by a processor.
+	 */
+	HANDLED,
+	
+	/**
+	 * A requested action has been completed.
+	 * Mainly intended for mirroring the {@link #REQUEST} tag.
 	 */
 	COMPLETED
 }

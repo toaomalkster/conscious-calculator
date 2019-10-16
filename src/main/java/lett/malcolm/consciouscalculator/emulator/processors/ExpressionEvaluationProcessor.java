@@ -1,6 +1,7 @@
 package lett.malcolm.consciouscalculator.emulator.processors;
 
 import java.time.Clock;
+import java.util.Collections;
 import java.util.List;
 
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
@@ -40,10 +41,10 @@ public class ExpressionEvaluationProcessor implements Processor {
 	 * Emitted events have the same strength and tags copied from the evaluated
 	 * memory item.
 	 * 
-	 * @return an event UPDATE (as indicated by having the same GUID as the source)
+	 * @return an updated event
 	 */
 	@Override
-	public Event process(List<Event> events, WorkingMemory memory) {
+	public List<Event> process(List<Event> events, WorkingMemory memory) {
 		for (Event memoryItem: memory.all()) {
 			if (accepts(memoryItem)) {
 				Event event = evaluate((ExpressionEvent) memoryItem);
@@ -53,7 +54,7 @@ public class ExpressionEvaluationProcessor implements Processor {
 					
 					event.tags().addAll(memoryItem.tags());
 					event.setStrength(memoryItem.strength());
-					return event;
+					return Collections.singletonList(event);
 				}
 			}
 		}

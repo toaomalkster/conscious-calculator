@@ -1,18 +1,24 @@
 package lett.malcolm.consciouscalculator.emulator;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 public class WorkingMemory {
 	private final int maxSize;
 	
-	private final SortedSet<Event> contents = new TreeSet<>(
-			Comparator.comparing(Event::strength).reversed());
+	// FIXME need a better solution
+	// the comparator here is used for comparing of the 'keys' in the underlying map, not just the navigation order.
+	// so it teats all events with the same strength as duplicates, and keeps only the first.
+//	private final SortedSet<Event> contents = new TreeSet<>(
+//			Comparator.comparing(Event::strength).reversed());
+	
+	private final List<Event> contents = new ArrayList<>();
 	
 	public WorkingMemory(int maxSize) {
 		this.maxSize = maxSize;
@@ -35,13 +41,15 @@ public class WorkingMemory {
 		}
 		contents.add(event);
 	}
-
+	
 	/**
 	 * Callers MUST NOT modify the returned set.
-	 * @return
+	 * @return all memory items, in priority order of navigation
 	 */
-	public SortedSet<Event> all() {
-		return Collections.unmodifiableSortedSet(contents);
+	public Collection<Event> all() {
+		// FIXME not ideal to sort every time, but here as a quick work around for now
+		contents.sort(Comparator.comparing(Event::strength).reversed());
+		return Collections.unmodifiableList(contents);
 	}
 	
 }

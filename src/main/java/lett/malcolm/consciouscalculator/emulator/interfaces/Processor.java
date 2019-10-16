@@ -15,10 +15,13 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
  */
 public interface Processor {
 	/**
+	 * The first returned event is considered the main one. When the attenuator decides which
+	 * processor's output to process, it only examines the first event.
 	 * 
 	 * @param events events that have been extracted from incoming inputs, if any
 	 * @param memory current working memory
-	 * @return a generated event that is offered up for potential attention
+	 * @return a generated event that is offered up for potential attention,
+	 *   and potentially other events that need to be updated (eg: with status flag changes)
 	 */
-	public Event process(List<Event> events, WorkingMemory memory);
+	public List<Event> process(List<Event> events, WorkingMemory memory);
 }

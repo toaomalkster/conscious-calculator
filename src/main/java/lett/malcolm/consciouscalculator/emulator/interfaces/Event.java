@@ -3,7 +3,14 @@ package lett.malcolm.consciouscalculator.emulator.interfaces;
 import java.time.Instant;
 import java.util.Set;
 
-public interface Event {
+public interface Event extends Cloneable {
+	
+	/**
+	 * Deep clone.
+	 * @return
+	 */
+	public Event clone();
+	
 	public String guid();
 	
 	public Instant timestamp();

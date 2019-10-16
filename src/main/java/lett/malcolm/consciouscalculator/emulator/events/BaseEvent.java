@@ -1,5 +1,6 @@
 package lett.malcolm.consciouscalculator.emulator.events;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.HashSet;
@@ -20,6 +21,22 @@ abstract class BaseEvent implements Event {
 	public BaseEvent(Clock clock) {
 		this.guid = UUID.randomUUID().toString();
 		this.timestamp = clock.instant();
+	}
+
+	@Override
+	public Event clone() {
+		// clone data
+		
+		// deep clone this object
+		try {
+			BaseEvent clone = (BaseEvent) super.clone();
+			clone.tags = new HashSet<>(this.tags);
+			clone.data = cloneData();
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			// not expected
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -73,5 +90,24 @@ abstract class BaseEvent implements Event {
 
 	public void setData(Object data) {
 		this.data = data;
+	}
+	
+	private Object cloneData() {
+		if (data == null) {
+			return null;
+		}
+		
+		if (data instanceof String) {
+			// immutable, so doesn't need to be cloned
+			return data;
+		}
+
+		// catch-all: reflection
+		try {
+			return data.getClass().getMethod("clone").invoke(this.data);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+				| SecurityException e) {
+			throw new RuntimeException(data.getClass().getSimpleName() + " needs to implement clone()", e);
+		}
 	}
 }
