@@ -1,4 +1,4 @@
-package lett.malcolm.consciouscalculator.consciouscalculator;
+package lett.malcolm.consciouscalculator;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
