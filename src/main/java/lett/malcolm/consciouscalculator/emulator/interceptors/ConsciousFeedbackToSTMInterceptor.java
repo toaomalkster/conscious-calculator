@@ -22,6 +22,7 @@ public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 	
 	public ConsciousFeedbackToSTMInterceptor(Clock clock, ShortTermMemory shortTermMemory) {
 		this.clock = clock;
+		this.shortTermMemory = shortTermMemory;
 	}
 	
 	@Override
