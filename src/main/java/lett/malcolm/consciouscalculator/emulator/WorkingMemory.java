@@ -7,9 +7,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 public class WorkingMemory {
+	private static final Logger log = LoggerFactory.getLogger(WorkingMemory.class);
+
 	private final int maxSize;
 	
 	// FIXME need a better solution
@@ -35,11 +40,21 @@ public class WorkingMemory {
 	public void store(Event event) {
 		// TODO apply strength, compaction, and obsolescence rules
 		
+		boolean replaced = false;
+		
 		Optional<Event> existing = contents.stream().filter(e -> e.guid().equals(event.guid())).findFirst();
 		if (existing.isPresent()) {
 			contents.remove(existing.get());
+			replaced = true;
 		}
 		contents.add(event);
+		
+		if (replaced) {
+			log.debug("WM Replace: " + event);
+		}
+		else {
+			log.debug("WM Add:     " + event);
+		}
 	}
 	
 	/**
@@ -61,6 +76,15 @@ public class WorkingMemory {
 			return all().iterator().next();
 		}
 		return null;
+	}
+	
+	/**
+	 * Degrades all strengths by 0.01.
+	 */
+	public void degradeStrengths() {
+		for (Event event: contents) {
+			event.setStrength(event.strength() - 0.01);
+		}
 	}
 	
 }

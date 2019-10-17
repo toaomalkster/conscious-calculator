@@ -33,7 +33,7 @@ public class ExpressionResponseProcessor implements Processor {
 			if (accepts(memoryItem)) {
 				Event event = new ActionEvent(clock, (String) memoryItem.data());
 				event.tags().addAll(memoryItem.tags());
-				event.setStrength(memoryItem.strength());
+				event.setStrength(memoryItem.strength() + 0.01);
 				
 				Event updatedMemoryItem = memoryItem.clone();
 				updatedMemoryItem.tags().add(EventTag.HANDLED);

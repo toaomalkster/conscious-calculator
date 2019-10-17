@@ -55,7 +55,7 @@ public class ExpressionParseProcessor implements Processor {
 				if (expr != null) {
 					Event event = new ExpressionEvent(clock, expr);
 					event.tags().addAll(memoryItem.tags());
-					event.setStrength(memoryItem.strength());
+					event.setStrength(memoryItem.strength() + 0.01);
 					
 					Event updatedMemoryItem = memoryItem.clone();
 					updatedMemoryItem.tags().add(EventTag.HANDLED);

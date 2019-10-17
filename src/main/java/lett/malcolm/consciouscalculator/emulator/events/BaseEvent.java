@@ -2,6 +2,7 @@ package lett.malcolm.consciouscalculator.emulator.events;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,6 +10,7 @@ import java.util.UUID;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
+import lett.malcolm.consciouscalculator.utils.QuantityUtils;
 
 abstract class BaseEvent implements Event {
 	private String guid;
@@ -17,8 +19,10 @@ abstract class BaseEvent implements Event {
 	private int size = 1;
 	private Set<EventTag> tags = new HashSet<>();
 	private Object data;
+	private Clock clock;
 			
 	public BaseEvent(Clock clock) {
+		this.clock = clock;
 		this.guid = UUID.randomUUID().toString();
 		this.timestamp = clock.instant();
 	}
@@ -39,6 +43,39 @@ abstract class BaseEvent implements Event {
 		}
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append(getClass().getSimpleName()).append("{");
+		
+		// guid
+		buf.append(guid.substring(0,5)).append(",");
+		
+		// age
+		long age = Duration.between(timestamp, clock.instant()).toMillis();
+		buf.append(QuantityUtils.toShortMillisString(age)).append(",");
+		
+		// strength
+		buf.append(strength).append(",");
+		
+		// tags
+		for (EventTag tag: tags) {
+			buf.append(tag).append(",");
+		}
+		
+		// content
+		if (data instanceof String) {
+			buf.append("\"").append(data).append("\"");
+		}
+		else {
+			buf.append(data);
+		}
+		
+		buf.append("}");
+		return buf.toString();
+	}
+
+	
 	@Override
 	public String guid() {
 		return guid;
