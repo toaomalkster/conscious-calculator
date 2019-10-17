@@ -15,11 +15,11 @@ import java.util.Queue;
  */
 public interface InputInterceptor {
 	/**
-	 * Identifies which sense this interceptor should be bound to.
-	 * Interceptors only receive data from one sense stream.
+	 * Identifies which input this interceptor should be bound to.
+	 * Interceptors only receive data from one input stream.
 	 * @return
 	 */
-	public InputDesignator senseDesignator();
+	public InputDesignator inputDesignator();
 	
 	/**
 	 * Extract meaningful events, if it understands the incoming data.

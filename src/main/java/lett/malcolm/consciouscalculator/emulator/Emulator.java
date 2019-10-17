@@ -108,21 +108,11 @@ public class Emulator {
 			
 			// input intercepting
 			for (InputInterceptor interceptor: inputInterceptors) {
-				if (InputDesignator.COMMAND.equals(interceptor.senseDesignator())) {
-					// clone incoming stream
-					Queue<Object> stream = new LinkedList<Object>(commandStream);
-					Event event = interceptor.intercept(stream);
-					if (event != null) {
-						interceptedEvents.add(event);
-					}
-				}
-				if (InputDesignator.CONSCIOUS_FEEDBACK.equals(interceptor.senseDesignator())) {
-					// clone incoming stream
-					Queue<Object> stream = new LinkedList<Object>(consciousFeedbackStream);
-					Event event = interceptor.intercept(stream);
-					if (event != null) {
-						interceptedEvents.add(event);
-					}
+				// clone incoming stream
+				Queue<Object> stream = new LinkedList<Object>(getInputStream(interceptor.inputDesignator()));
+				Event event = interceptor.intercept(stream);
+				if (event != null) {
+					interceptedEvents.add(event);
 				}
 			}
 			updated |= !interceptedEvents.isEmpty();
@@ -151,6 +141,15 @@ public class Emulator {
 			if (updated) {
 				trigger();
 			}
+		}
+	}
+	
+	private Queue<Object> getInputStream(InputDesignator designator) {
+		switch (designator) {
+		case COMMAND: return commandStream;
+		case CONSCIOUS_FEEDBACK: return consciousFeedbackStream;
+		default:
+			throw new UnsupportedOperationException(InputDesignator.class.getSimpleName()+" "+designator+" not recognised");
 		}
 	}
 	

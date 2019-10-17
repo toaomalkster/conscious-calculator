@@ -25,7 +25,7 @@ public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 	}
 	
 	@Override
-	public InputDesignator senseDesignator() {
+	public InputDesignator inputDesignator() {
 		return InputDesignator.CONSCIOUS_FEEDBACK;
 	}
 
