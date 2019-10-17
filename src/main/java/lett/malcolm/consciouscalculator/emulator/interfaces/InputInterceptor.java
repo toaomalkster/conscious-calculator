@@ -8,10 +8,12 @@ import java.util.Queue;
  * 
  * The output from interceptors are fed into the Attention Attenuator, and also as triggers and inputs
  * to {@link Processor}s.
+ * 
+ * Interceptors are allowed to hold state. This is especially important as intereptors need to detect
+ * events (such as "changes"), from input streams. Changes cannot be detected without an idea of what came
+ * before.
  */
 public interface InputInterceptor {
-	public static final String aaoeu = "aoeu";
-	
 	/**
 	 * Identifies which sense this interceptor should be bound to.
 	 * Interceptors only receive data from one sense stream.

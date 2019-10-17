@@ -52,4 +52,15 @@ public class WorkingMemory {
 		return Collections.unmodifiableList(contents);
 	}
 	
+	/**
+	 * Gets the single top-most item within working memory, if any.
+	 * @return the found item, or null if working memory is currently empty
+	 */
+	public Event top() {
+		if (!contents.isEmpty()) {
+			return all().iterator().next();
+		}
+		return null;
+	}
+	
 }

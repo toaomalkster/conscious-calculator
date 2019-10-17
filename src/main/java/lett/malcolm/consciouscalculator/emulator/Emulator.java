@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import lett.malcolm.consciouscalculator.emulator.interceptors.ConsciousFeedbackToSTMInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interceptors.RequestCommandInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.ActionAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
@@ -33,12 +34,20 @@ import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor
  */
 public class Emulator {
 	public static final int DEFAULT_WORKING_MEMORY_MAX_SIZE = 100;
+	public static final int DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE = 1000;
 
 	private Clock clock;
 	private AttentionAttenuator attentionAttenuator;
 	private WorkingMemory workingMemory;
+	private ShortTermMemory shortTermMemory;
+	private ConsciousFeedbacker consciousFeedbacker;
+	private ConsciousFeedbackToSTMInterceptor consciousFeedbackToSTMInterceptor;
+	
+	// interceptors and processors
 	private List<InputInterceptor> inputInterceptors;
 	private List<Processor> processors;
+	
+	// streams
 	private Queue<Object> commandStream = new LinkedList<>();
 	private Queue<Object> consciousFeedbackStream = new LinkedList<>();
 	private Queue<String> outputStream = new LinkedList<>();
@@ -49,14 +58,18 @@ public class Emulator {
 	public Emulator() {
 		this.clock = Clock.systemDefaultZone();
 		this.workingMemory = new WorkingMemory(DEFAULT_WORKING_MEMORY_MAX_SIZE);
+		this.shortTermMemory = new ShortTermMemory(DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE);
 		this.attentionAttenuator = new AttentionAttenuator(commandStream,
 				consciousFeedbackStream, workingMemory);
+		this.consciousFeedbacker = new ConsciousFeedbacker(consciousFeedbackStream, workingMemory);
+		this.consciousFeedbackToSTMInterceptor = new ConsciousFeedbackToSTMInterceptor(clock, shortTermMemory);
 		
 		// TODO discover interceptors and processors through class-path scanning
 		this.inputInterceptors = new ArrayList<>();
 		this.processors = new ArrayList<>();
 		
 		inputInterceptors.add(new RequestCommandInterceptor(clock));
+		inputInterceptors.add(consciousFeedbackToSTMInterceptor);
 		processors.add(new ExpressionEvaluationProcessor(clock));
 		processors.add(new ExpressionParseProcessor(clock));
 		processors.add(new ExpressionResponseProcessor(clock));
@@ -121,6 +134,12 @@ public class Emulator {
 			// - generate event from current state of play
 			// - feed back into consciousFeedbackStream
 			// - add another trigger to queue
+			consciousFeedbacker.process();
+			Event expectedToBeNull = consciousFeedbackToSTMInterceptor.intercept(consciousFeedbackStream);
+			if (expectedToBeNull != null) {
+				// safety against future changes
+				throw new IllegalArgumentException("Interceptor now returns non-null events, and I'm not doing anything with them");
+			}
 			
 			// tick cleanup: consume input queues
 			commandStream.clear();
