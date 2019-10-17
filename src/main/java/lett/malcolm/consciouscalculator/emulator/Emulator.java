@@ -61,7 +61,7 @@ public class Emulator {
 		this.shortTermMemory = new ShortTermMemory(DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE);
 		this.attentionAttenuator = new AttentionAttenuator(commandStream,
 				consciousFeedbackStream, workingMemory);
-		this.consciousFeedbacker = new ConsciousFeedbacker(consciousFeedbackStream, workingMemory);
+		this.consciousFeedbacker = new ConsciousFeedbacker(workingMemory);
 		this.consciousFeedbackToSTMInterceptor = new ConsciousFeedbackToSTMInterceptor(clock, shortTermMemory);
 		
 		// TODO discover interceptors and processors through class-path scanning
@@ -104,8 +104,9 @@ public class Emulator {
 		while (triggerQueue.poll() != null) {
 			List<Event> interceptedEvents = new ArrayList<>();
 			List<List<Event>> processedEventSets = new ArrayList<>();
+			boolean updated = false;
 			
-			// sense intercepting - 'input'
+			// input intercepting
 			for (InputInterceptor interceptor: inputInterceptors) {
 				if (InputDesignator.COMMAND.equals(interceptor.senseDesignator())) {
 					// clone incoming stream
@@ -115,7 +116,16 @@ public class Emulator {
 						interceptedEvents.add(event);
 					}
 				}
+				if (InputDesignator.CONSCIOUS_FEEDBACK.equals(interceptor.senseDesignator())) {
+					// clone incoming stream
+					Queue<Object> stream = new LinkedList<Object>(consciousFeedbackStream);
+					Event event = interceptor.intercept(stream);
+					if (event != null) {
+						interceptedEvents.add(event);
+					}
+				}
 			}
+			updated |= !interceptedEvents.isEmpty();
 			
 			// processing
 			for (Processor processor: processors) {
@@ -125,25 +135,18 @@ public class Emulator {
 					processedEventSets.add(eventSet);
 				}
 			}
+			updated |= !processedEventSets.isEmpty();
 			
 			// attention
-			boolean updated = attentionAttenuator.act(interceptedEvents, processedEventSets);
-			
-			// run conscious feedback loop
-			// TODO
-			// - generate event from current state of play
-			// - feed back into consciousFeedbackStream
-			// - add another trigger to queue
-			consciousFeedbacker.process();
-			Event expectedToBeNull = consciousFeedbackToSTMInterceptor.intercept(consciousFeedbackStream);
-			if (expectedToBeNull != null) {
-				// safety against future changes
-				throw new IllegalArgumentException("Interceptor now returns non-null events, and I'm not doing anything with them");
-			}
-			
+			updated |= attentionAttenuator.act(interceptedEvents, processedEventSets);
+
 			// tick cleanup: consume input queues
+			// (has to go here, because we'll next push data onto the consciousFeedbackStream and want that to be feed back into the next loop)
 			commandStream.clear();
 			consciousFeedbackStream.clear();
+			
+			// run conscious feedback loop
+			consciousFeedbacker.writeTo(consciousFeedbackStream);
 			
 			if (updated) {
 				trigger();

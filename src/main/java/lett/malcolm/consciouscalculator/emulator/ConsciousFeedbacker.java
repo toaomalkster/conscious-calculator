@@ -5,16 +5,12 @@ import java.util.Queue;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 public class ConsciousFeedbacker {
-	private Queue<Object> resultStream;
 	private WorkingMemory workingMemory;
 
 	/**
-	 * @param resultStream stream to write to
 	 * @param workingMemory
 	 */
-	public ConsciousFeedbacker(Queue<Object> resultStream,
-			WorkingMemory workingMemory) {
-		this.resultStream = resultStream;
+	public ConsciousFeedbacker(WorkingMemory workingMemory) {
 		this.workingMemory = workingMemory;
 	}
 	
@@ -29,12 +25,14 @@ public class ConsciousFeedbacker {
 	 * - execution of Actions - these happen "mysteriously"
 	 * 
 	 * Writes to the result stream every 'tick', regardless of the level of activity.
+	 * 
+	 * @param consciousFeedbackStream stream to write to
 	 */
-	public void process() {
+	public void writeTo(Queue<Object> consciousFeedbackStream) {
 		Event top = workingMemory.top();
 		
 		// TODO process, filter, and simplify the state of working-memory
 		Event summary = top.clone(); // TODO if ever start adding linkages between events, this probably wants to collapse those linkages down
-		resultStream.offer(summary);
+		consciousFeedbackStream.offer(summary);
 	}
 }
