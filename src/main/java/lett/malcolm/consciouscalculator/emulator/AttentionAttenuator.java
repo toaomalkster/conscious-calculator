@@ -76,7 +76,7 @@ public class AttentionAttenuator {
 			}
 		}
 
-		// act
+		// emit
 		if (chosenEventSet != null) {
 			// adds or updates
 			chosenEventSet.forEach(workingMemory::store);

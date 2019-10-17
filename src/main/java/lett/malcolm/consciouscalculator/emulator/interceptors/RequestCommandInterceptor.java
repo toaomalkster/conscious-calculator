@@ -19,7 +19,7 @@ public class RequestCommandInterceptor implements InputInterceptor {
 	}
 	
 	@Override
-	public InputDesignator senseDesignator() {
+	public InputDesignator inputDesignator() {
 		return InputDesignator.COMMAND;
 	}
 
