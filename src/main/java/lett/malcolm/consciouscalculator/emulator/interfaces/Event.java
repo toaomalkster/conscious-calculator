@@ -32,17 +32,21 @@ public interface Event extends Cloneable {
 	 */
 	public Set<EventTag> tags();
 	
+	/**
+	 * Data always conforms to rules set by {@link DataRules}.
+	 */
 	public Object data();
 
 	public void setStrength(double strength);
 
 	public void setTimestamp(Instant timestamp);
 
-	public void setSize(int size);
-
 	public void setGuid(String guid);
 
 	public void setTags(Set<EventTag> tags);
 
+	/**
+	 * Must conform to rules set by {@link DataRules}.
+	 */
 	public void setData(Object data);
 }
