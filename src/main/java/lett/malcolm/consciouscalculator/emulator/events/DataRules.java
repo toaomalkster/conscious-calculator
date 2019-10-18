@@ -18,12 +18,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * Generic data values may only be one of the following types, which may be recursive:
  * <ul>
+ * <li> null
  * <li> String
  * <li> Integer
  * <li> Double
  * <li> Boolean
  * <li> List
- * <li> Set
  * <li> Map<by string>
  * </ul>
  * 
@@ -32,18 +32,34 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * <li> Cycles and graphs are permitted, but all referenced objects should exist within the data structure -- cannot be verified automatically
  * </ul>
  * 
- * TODO add support for Enums? Can't reliably clone once persisted to json.
+ * These data rules ensure that arbitrary events can be processed by processors which don't necessarily know 
+ * the data structure a-priori. This enables more generic processors.
+ * Additionally, it makes it easier and more deterministic to clone and persist data.
+ * 
+ * <h3>Problematic potentially supportable data types</h3>
+ * The following data types could possibly be supported by this class, but they are problematic
+ * because we cannot deterministically cycle between object and marshaled representations without
+ * loss.
+ * <ul>
+ * <li> Set - marshals to the same thing as a List
+ * <li> Enum - loses the type when marshaling, so unmarshals to a string.
+ * </ul> 
  */
+// TODO should it clean-up collection sub-types to basic List/Map (could possibly convert any Collection to List at same time)
 public class DataRules {
 	private static final int EXPECTED_MAX_NUMBER_OF_OBJECTS = 100;
-	private static final Set<Class<?>> IMMUTABLE_TYPES = new HashSet<Class<?>>();
+	private static final Set<Class<?>> IMMUTABLE_SIMPLE_TYPES = new HashSet<Class<?>>();
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 	
+	// Want to approximate numbers of words in a statement.
+	// Average English word length is approximately 5. Plus add one for space character.
+	private static final int LETTERS_PER_SIZE_UNIT = 6;
+	
 	static {
-		IMMUTABLE_TYPES.add(String.class);
-		IMMUTABLE_TYPES.add(Integer.class);
-		IMMUTABLE_TYPES.add(Double.class);
-		IMMUTABLE_TYPES.add(Boolean.class);
+		IMMUTABLE_SIMPLE_TYPES.add(String.class);
+		IMMUTABLE_SIMPLE_TYPES.add(Integer.class);
+		IMMUTABLE_SIMPLE_TYPES.add(Double.class);
+		IMMUTABLE_SIMPLE_TYPES.add(Boolean.class);
 	}
 
 	/**
@@ -61,6 +77,7 @@ public class DataRules {
 	 * For example, used to help set {@code Event.size}.
 	 * 
 	 * Not a real size, so don't try to use it to determine the number of items an a collection.
+	 * 
 	 * @param obj
 	 * @return
 	 */
@@ -95,7 +112,7 @@ public class DataRules {
 		else if (obj instanceof Boolean) {
 			return Boolean.TRUE.equals(obj) ? "true" : "false";
 		}
-		else if (IMMUTABLE_TYPES.contains(obj.getClass())) {
+		else if (IMMUTABLE_SIMPLE_TYPES.contains(obj.getClass())) {
 			return String.valueOf(obj);
 		}
 		else {
@@ -158,11 +175,6 @@ public class DataRules {
 					assertValid(item, cycles);
 				}
 			}
-			else if (obj instanceof Set) {
-				for (Object item: (Set<Object>) obj) {
-					assertValid(item, cycles);
-				}
-			}
 			else if (obj instanceof Map) {
 				for (Map.Entry<String,Object> entry: ((Map<String,Object>) obj).entrySet()) {
 					assertValid(entry.getValue(), cycles);
@@ -179,7 +191,8 @@ public class DataRules {
 	@SuppressWarnings("unchecked")
 	private static int measureSize(Object obj, CycleHandler cycles) {
 		if (obj == null) {
-			return 0;
+			// rationale: a list of N nulls = 1 + N (and a neural network could use the list size to determine things)
+			return 1;
 		}
 		else if (cycles.observeAndIsDuplicate(obj)) {
 			// 1 unit for a reference
@@ -187,10 +200,10 @@ public class DataRules {
 		}
 		else {
 			if (obj instanceof String) {
-				// one 'unit' for each group of 3 characters
-				return (int) Math.ceil(((String) obj).length() / 3.0);
+				// one 'unit' for each group of characters
+				return (int) Math.ceil(((String) obj).length() / (double)LETTERS_PER_SIZE_UNIT);
 			}
-			else if (IMMUTABLE_TYPES.contains(obj.getClass())) {
+			else if (IMMUTABLE_SIMPLE_TYPES.contains(obj.getClass())) {
 				return 1;
 			}
 			
@@ -204,12 +217,9 @@ public class DataRules {
 					size += measureSize(item, cycles);
 				}
 			}
-			else if (obj instanceof Set) {
-				for (Object item: (List<Object>) obj) {
-					size += measureSize(item, cycles);
-				}
-			}
 			else if (obj instanceof Map) {
+				// in maps, the keys are not counted
+				// -- treated like Class member lookup-lists in Java program: they are stored only once in executional memory
 				for (Map.Entry<String,Object> entry: ((Map<String,Object>) obj).entrySet()) {
 					size += measureSize(entry.getValue(), cycles);
 				}
@@ -240,7 +250,7 @@ public class DataRules {
 		}
 
 		// clone
-		if (IMMUTABLE_TYPES.contains(obj.getClass())) {
+		if (IMMUTABLE_SIMPLE_TYPES.contains(obj.getClass())) {
 			// immutable, so no need to clone
 			clone = obj;
 		}
@@ -250,13 +260,6 @@ public class DataRules {
 				cloneList.add(clone(item, cycles));
 			}
 			clone = cloneList;
-		}
-		else if (obj instanceof Set) {
-			Set<Object> cloneSet = new HashSet<>();
-			for (Object item: (List<Object>) obj) {
-				cloneSet.add(clone(item, cycles));
-			}
-			clone = cloneSet;
 		}
 		else if (obj instanceof Map) {
 			Map<String,Object> cloneMap = new HashMap<>();
@@ -321,13 +324,10 @@ public class DataRules {
 	 * @return
 	 */
 	private static boolean isValidImmediateType(Object obj) {
-		if (IMMUTABLE_TYPES.contains(obj.getClass())) {
+		if (IMMUTABLE_SIMPLE_TYPES.contains(obj.getClass())) {
 			return true;
 		}
 		if (obj instanceof List) {
-			return true;
-		}
-		if (obj instanceof Set) {
 			return true;
 		}
 		if (obj instanceof Map) {
