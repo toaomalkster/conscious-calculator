@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+  <!--
+  consider use of Lilith:
+  https://github.com/huxi/lilith
+   -->
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %d{HH:mm:ss} [%thread] %-5level %-20.-20logger{0} - %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>target/output.log</file>
+    <append>true</append>
+    <immediateFlush>true</immediateFlush>
+    <encoder>
+      <pattern>
+        %d{HH:mm:ss} [%thread] %-5level %.-30logger{36} - %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+  
+  <root level="debug">
+    <appender-ref ref="CONSOLE" />
+    <appender-ref ref="FILE" />
+  </root>
+
+  <logger name="lett.malcolm" level="trace" additivity="false">
+    <appender-ref ref="CONSOLE" />
+    <appender-ref ref="FILE" />
+  </logger>
+</configuration>

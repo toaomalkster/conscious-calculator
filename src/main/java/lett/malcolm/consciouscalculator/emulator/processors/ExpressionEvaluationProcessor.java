@@ -53,7 +53,7 @@ public class ExpressionEvaluationProcessor implements Processor {
 					event.setGuid(memoryItem.guid());
 					
 					event.tags().addAll(memoryItem.tags());
-					event.setStrength(memoryItem.strength());
+					event.setStrength(memoryItem.strength() + 0.01);
 					return Collections.singletonList(event);
 				}
 			}

@@ -7,6 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lett.malcolm.consciouscalculator.emulator.interceptors.ConsciousFeedbackToSTMInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interceptors.RequestCommandInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.ActionAwareProcessor;
@@ -35,6 +38,8 @@ import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor
 public class Emulator {
 	public static final int DEFAULT_WORKING_MEMORY_MAX_SIZE = 100;
 	public static final int DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE = 1000;
+	
+	private static final Logger logger = LoggerFactory.getLogger(Emulator.class);
 
 	private Clock clock;
 	private AttentionAttenuator attentionAttenuator;
@@ -126,6 +131,7 @@ public class Emulator {
 				}
 			}
 			updated |= !processedEventSets.isEmpty();
+			logger.trace("Events: " + processedEventSets);
 			
 			// attention
 			updated |= attentionAttenuator.act(interceptedEvents, processedEventSets);
@@ -137,6 +143,9 @@ public class Emulator {
 			
 			// run conscious feedback loop
 			consciousFeedbacker.writeTo(consciousFeedbackStream);
+			
+			// degrade strengths
+			workingMemory.degradeStrengths();
 			
 			if (updated) {
 				trigger();

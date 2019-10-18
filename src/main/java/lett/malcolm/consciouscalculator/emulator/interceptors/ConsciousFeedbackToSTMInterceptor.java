@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.util.Queue;
 
 import lett.malcolm.consciouscalculator.emulator.ShortTermMemory;
+import lett.malcolm.consciouscalculator.emulator.events.EventEqualitor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
@@ -15,6 +16,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 	private Clock clock;
 	private ShortTermMemory shortTermMemory;
+	private EventEqualitor equalitor = EventEqualitor.forChangeDetection();
 	
 	// state
 	private boolean first = true;
@@ -55,7 +57,12 @@ public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 			return true;
 		}
 		if (prevState != null && newState != null) {
-			return prevState.equals(newState);
+			if (prevState instanceof Event && newState instanceof Event) {
+				return equalitor.isSame((Event) prevState, (Event) newState);
+			}
+			else {
+				return prevState.equals(newState);
+			}
 		}
 		return true;
 	}

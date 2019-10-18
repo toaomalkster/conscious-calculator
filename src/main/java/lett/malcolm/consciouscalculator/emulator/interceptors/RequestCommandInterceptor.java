@@ -28,7 +28,9 @@ public class RequestCommandInterceptor implements InputInterceptor {
 		for (Object obj: stream) {
 			String data = (String) obj;
 			
-			return new TextRequestEvent(clock, data);
+			Event event = new TextRequestEvent(clock, data);
+			event.setStrength(0.5);
+			return event;
 		}
 		return null;
 	}

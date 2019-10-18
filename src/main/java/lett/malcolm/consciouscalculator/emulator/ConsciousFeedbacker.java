@@ -32,7 +32,12 @@ public class ConsciousFeedbacker {
 		Event top = workingMemory.top();
 		
 		// TODO process, filter, and simplify the state of working-memory
-		Event summary = top.clone(); // TODO if ever start adding linkages between events, this probably wants to collapse those linkages down
-		consciousFeedbackStream.offer(summary);
+		if (top != null) {
+			Event summary = top.clone(); // TODO if ever start adding linkages between events, this probably wants to collapse those linkages down
+			consciousFeedbackStream.offer(summary);
+		}
+		else {
+			// TODO represent "no thought" into stream
+		}
 	}
 }
