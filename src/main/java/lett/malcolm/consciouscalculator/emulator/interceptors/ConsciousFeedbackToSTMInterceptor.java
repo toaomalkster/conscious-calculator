@@ -15,6 +15,23 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
  * Special purpose interceptor that detects each new event coming from conscious feedback,
  * and records them into Short Term Memory.
  */
+// TODO consider changing to store clone of raw event type in STM, and only convert to MemoryEvent upon read into WM.
+/*
+ * Debate:
+ * 	    Should STM be stored as original event types, or as MemoryEvents.
+ * 
+ * Conscious Feedback should be a 'representation' of conscious state...not the original values.
+ * 
+ * But at the moment there's a practical benefit in keeping that 'representation' as the same data structure,
+ * and even as the same data.
+ * 
+ * Once loaded back into WM, it needs to feel like a 'historical' memory of an event, not
+ * raw thought itself...or the processors will get confused.
+ * 
+ * If want to re-process something from the past, should make a conscious decision to extract the
+ * original data and turn it into a current thought.
+ * ie: extract "3+5" expression from a MemoryEvent.
+ */
 public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 	private Clock clock;
 	private ShortTermMemory shortTermMemory;
@@ -52,7 +69,7 @@ public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Extracts information out of {@code state} and converts it into
 	 * a {@link MemoryEvent}.
