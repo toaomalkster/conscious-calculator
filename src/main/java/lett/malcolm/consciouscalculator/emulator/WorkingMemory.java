@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +80,51 @@ public class WorkingMemory {
 			return all().iterator().next();
 		}
 		return null;
+	}
+	
+	/**
+	 * Gets an event by guid, if present.
+	 * @param guid
+	 * @return the found event, or null if not found
+	 */
+	public Event get(String guid) {
+		for (Event event: contents) {
+			if (event.guid().equals(guid)) {
+				return event;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets the chain of events, ending with the given guid (inclusive).
+	 * @param guid
+	 * @return chain, if found
+	 */
+	public List<Event> getChainEndingWith(String guid) {
+		List<Event> chain = new ArrayList<>();
+		
+		Set<String> observed = new HashSet<>();
+		Queue<String> guids = new LinkedList<>();
+		guids.offer(guid);
+		
+		while (!guids.isEmpty()) {
+			String it = guids.remove();
+			
+			if (!observed.contains(it)) {
+				observed.add(it);
+				
+				Event event = get(it);
+				if (event != null) {
+					chain.add(event);
+					event.references().forEach(guids::offer);
+				}
+			}
+		}
+		
+		// constructed in reverse order, so flip order and return
+		Collections.reverse(chain);
+		return chain;
 	}
 	
 	/**

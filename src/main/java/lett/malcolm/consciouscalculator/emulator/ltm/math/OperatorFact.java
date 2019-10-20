@@ -1,12 +1,29 @@
 package lett.malcolm.consciouscalculator.emulator.ltm.math;
 
+import java.util.Arrays;
+import java.util.List;
+
+import lett.malcolm.consciouscalculator.emulator.ltm.Fact;
+
 /**
  * Represents a mathematical operator, as used within an expression.
  */
 // FIXME blindly assumes integers
-public class OperatorFact {
+public class OperatorFact implements Fact {
 	public static final String GUID = OperatorFact.class.getSimpleName();
+	
+	@Override
+	public String guid() {
+		return GUID;
+	}
 
+	@Override
+	public List<Class<?>> dataTypes() {
+		return Arrays.asList(
+				OperatorSymbol.class,
+				String.class);
+	}
+	
 	public static enum OperatorSymbol {
 		PLUS("+", 2) {
 			protected Number applyInternal(Number... args) {

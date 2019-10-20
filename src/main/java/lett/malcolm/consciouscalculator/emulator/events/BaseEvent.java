@@ -63,8 +63,13 @@ abstract class BaseEvent implements Event {
 			buf.append(tag).append(",");
 		}
 		
+		// references
+		for (String reference: references) {
+			buf.append("ref=").append(reference.substring(0,5)).append(",");
+		}
+		
 		// content
-		buf.append(DataRules.marshal(data));
+		buf.append(DataRules.stringOf(data));
 		
 		buf.append("}");
 		return buf.toString();
