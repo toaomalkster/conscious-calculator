@@ -1,4 +1,4 @@
-package lett.malcolm.consciouscalculator.emulator.ltm;
+package lett.malcolm.consciouscalculator.emulator.interfaces;
 
 import java.util.List;
 

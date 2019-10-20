@@ -3,7 +3,7 @@ package lett.malcolm.consciouscalculator.emulator.ltm.math;
 import java.util.Arrays;
 import java.util.List;
 
-import lett.malcolm.consciouscalculator.emulator.ltm.Fact;
+import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
 
 /**
  * Represents a mathematical operator, as used within an expression.
