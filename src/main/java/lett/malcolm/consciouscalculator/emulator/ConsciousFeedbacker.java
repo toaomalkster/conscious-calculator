@@ -31,13 +31,38 @@ public class ConsciousFeedbacker {
 	public void writeTo(Queue<Object> consciousFeedbackStream) {
 		Event top = workingMemory.top();
 		
-		// TODO process, filter, and simplify the state of working-memory
+		// process, filter, and simplify the state of working-memory
+		ConsciousState summary = new ConsciousState();
+		
+		// summarise state of working-memory by holding a copy of the top-most event only
+		// (TODO consider whether to convert this into a MemoryEvent now or later)
 		if (top != null) {
-			Event summary = top.clone(); // TODO if ever start adding linkages between events, this probably wants to collapse those linkages down
-			consciousFeedbackStream.offer(summary);
+			// TODO if ever start adding linkages between events, this probably wants to collapse some of those linkages down
+			summary.setTop(top.clone());
 		}
-		else {
-			// TODO represent "no thought" into stream
+		
+		consciousFeedbackStream.offer(summary);
+	}
+	
+	/**
+	 * Represents current summarised and simplified state of data within field of conscious awareness.
+	 */
+	public static class ConsciousState {
+		private Event top;
+		
+		ConsciousState() {
+		}
+
+		/**
+		 * Null if nothing going on
+		 * @return
+		 */
+		public Event getTop() {
+			return top;
+		}
+
+		void setTop(Event top) {
+			this.top = top;
 		}
 	}
 }
