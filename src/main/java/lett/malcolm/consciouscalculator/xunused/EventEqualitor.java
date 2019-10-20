@@ -1,5 +1,6 @@
-package lett.malcolm.consciouscalculator.emulator.events;
+package lett.malcolm.consciouscalculator.xunused;
 
+import lett.malcolm.consciouscalculator.emulator.events.DataRules;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 /**

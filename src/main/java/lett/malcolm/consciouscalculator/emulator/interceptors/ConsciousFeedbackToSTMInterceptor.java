@@ -87,16 +87,16 @@ public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 		return result;
 	}
 
-	private boolean isSameState(ConsciousState prevState, ConsciousState newState) {
+	private boolean isSameState(ConsciousState state1, ConsciousState state2) {
 		// top event
-		if (prevState.getTop() == null ^ prevState.getTop() == null) {
+		if (state1.getTop() == null ^ state1.getTop() == null) {
 			return false;
 		}
-		else if (prevState.getTop() != null && newState.getTop() != null) {
-			if (!prevState.getTop().getClass().equals(newState.getTop().getClass())) {
+		else if (state1.getTop() != null && state2.getTop() != null) {
+			if (!state1.getTop().getClass().equals(state2.getTop().getClass())) {
 				return false;
 			}
-			if (!DataRules.isSame(prevState.getTop().data(), newState.getTop().data())) {
+			if (!DataRules.isSame(state1.getTop().data(), state2.getTop().data())) {
 				return false;
 			}
 		}

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import lett.malcolm.consciouscalculator.emulator.interceptors.ConsciousFeedbackToSTMInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interceptors.RequestCommandInterceptor;
+import lett.malcolm.consciouscalculator.emulator.interceptors.StuckThoughtInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.ActionAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
@@ -75,6 +76,7 @@ public class Emulator {
 		
 		inputInterceptors.add(new RequestCommandInterceptor(clock));
 		inputInterceptors.add(consciousFeedbackToSTMInterceptor);
+		inputInterceptors.add(new StuckThoughtInterceptor(clock));
 		processors.add(new ExpressionEvaluationProcessor(clock));
 		processors.add(new ExpressionParseProcessor(clock));
 		processors.add(new ExpressionResponseProcessor(clock));
