@@ -16,5 +16,11 @@ public enum EventTag {
 	 * A requested action has been completed.
 	 * Mainly intended for mirroring the {@link #REQUEST} tag.
 	 */
-	COMPLETED
+	COMPLETED,
+	
+	/**
+	 * This event represents the accepted resolution/solution/answer
+	 * to a prior event.
+	 */
+	CONCLUSION
 }

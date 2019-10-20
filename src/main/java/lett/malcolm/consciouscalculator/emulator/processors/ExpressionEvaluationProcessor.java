@@ -1,20 +1,30 @@
 package lett.malcolm.consciouscalculator.emulator.processors;
 
 import java.time.Clock;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
-import lett.malcolm.consciouscalculator.emulator.events.ExpressionEvent;
+import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
+import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
+import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
+import lett.malcolm.consciouscalculator.emulator.ltm.math.ExpressionFact;
+import lett.malcolm.consciouscalculator.emulator.ltm.math.NumberFact;
+import lett.malcolm.consciouscalculator.emulator.ltm.math.OperatorFact;
+import lett.malcolm.consciouscalculator.emulator.ltm.math.OperatorFact.OperatorSymbol;
 
 /**
  * Evaluates un-evaluated expressions.
  * 
  * Known Event types acted on by the this processor:
- * - {@link ExpressionEvent}
+ * - {@link PerceptEvent}
  */
 // FIXME should this just update the existing event?
 //    - But need to record that there was a question.
@@ -22,6 +32,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 //        -- Maybe STM should be a separate clone to avoid that happening?
 // Or REPLACE the existing event?
 public class ExpressionEvaluationProcessor implements Processor {
+	private static final Logger LOG = LoggerFactory.getLogger(ExpressionEvaluationProcessor.class);
+
 	private Clock clock;
 	
 	public ExpressionEvaluationProcessor(Clock clock) {
@@ -47,14 +59,24 @@ public class ExpressionEvaluationProcessor implements Processor {
 	public List<Event> process(List<Event> events, WorkingMemory memory) {
 		for (Event memoryItem: memory.all()) {
 			if (accepts(memoryItem)) {
-				Event event = evaluate((ExpressionEvent) memoryItem);
-				if (event != null) {
-					// indicate as an UPDATE by setting same GUID
-					event.setGuid(memoryItem.guid());
+				try {
+					Percept result = evaluate(((PerceptEvent) memoryItem).data());
+					if (result != null) {
+						PerceptEvent resultEvent = new PerceptEvent(clock, result);
+						//resultEvent.tags().addAll(memoryItem.tags());
+						resultEvent.tags().add(EventTag.CONCLUSION);
+						resultEvent.setStrength(memoryItem.strength() + 0.01);
+						resultEvent.references().add(memoryItem.guid());
+						
+						Event updatedMemoryItem = memoryItem.clone();
+						updatedMemoryItem.tags().add(EventTag.HANDLED);
+						
+						return Arrays.asList(resultEvent, updatedMemoryItem);
+					}
 					
-					event.tags().addAll(memoryItem.tags());
-					event.setStrength(memoryItem.strength() + 0.01);
-					return Collections.singletonList(event);
+				} catch (ClassCastException|IllegalArgumentException ignored) {
+					// can't evaluate this expression
+					LOG.trace("Unable to evaluate "+memoryItem+": " + ignored.getMessage());
 				}
 			}
 		}
@@ -63,16 +85,76 @@ public class ExpressionEvaluationProcessor implements Processor {
 	}
 	
 	private static boolean accepts(Event memoryItem) {
-		return !memoryItem.tags().contains(EventTag.COMPLETED) &&
-				memoryItem instanceof ExpressionEvent;
+		if (!memoryItem.tags().contains(EventTag.COMPLETED) &&
+				!memoryItem.tags().contains(EventTag.HANDLED) &&
+				memoryItem instanceof PerceptEvent) {
+			if (memoryItem.data() instanceof Percept) {
+				Percept percept = (Percept) memoryItem.data();
+				return percept.references().contains(ExpressionFact.GUID);
+			}
+		}
 		
 		// TODO check if expression is not already evaluated, and that it has unknowns in the right place
+		
+		return false;
 	}
 	
-	private Event evaluate(ExpressionEvent item) {
-		if ("3 + 5".equals(item.data())) {
-			return new ExpressionEvent(clock, "3 + 5 = 8");
+	/**
+	 * Deals with the possibility that there are parts of the expression it doesn't understand.
+	 * @param item
+	 * @return
+	 * @throws IllegalArgumentException if cannot evaluate
+	 * @throws ClassCastException if cannot evaluate
+	 */
+	private Percept evaluate(Percept expr) {
+		List<Percept> tokens = (List<Percept>) expr.data();
+		OperatorSymbol op = getOperator(tokens);
+		
+		Number result;
+		if (op.numArgs() == 1) {
+			assertTokenTypes(tokens, new OperatorFact(), new NumberFact());
+			Number arg1 = (Number) tokens.get(1).data();
+			result = op.apply(arg1);
 		}
-		return null;
+		else if (op.numArgs() == 2) {
+			assertTokenTypes(tokens, new NumberFact(), new OperatorFact(), new NumberFact());
+			Number arg1 = (Number) tokens.get(0).data();
+			Number arg2 = (Number) tokens.get(2).data();
+			result = op.apply(arg1, arg2);
+		}
+		else {
+			throw new IllegalArgumentException("Wrong token pattern - don't know how to deal with operators with "+op.numArgs()+" arguments");
+		}
+		
+		return new Percept(NumberFact.GUID, result);
+	}
+	
+	private OperatorSymbol getOperator(List<Percept> tokens) {
+		for (Percept token: tokens) {
+			if (token.references().contains(OperatorFact.GUID)) {
+				return OperatorSymbol.valueOfCode((String) token.data());
+			}
+		}
+		throw new IllegalArgumentException("Wrong token pattern - no operator");
+	}
+	
+	private void assertTokenTypes(List<Percept> tokens, Fact... facts) {
+		if (tokens.size() != facts.length) {
+			throw new IllegalArgumentException("Wrong token pattern - expected "+facts.length+", found "+tokens.size()+"");
+		}
+		for (int i=0; i < facts.length; i++) {
+			if (!isAssignableToAnyOf(tokens.get(i).data(), facts[i].dataTypes())) {
+				throw new IllegalArgumentException("Wrong token pattern - expected["+i+"] is any of ("+facts[i].dataTypes()+"), found "+tokens.get(i).data().getClass().getSimpleName()+"");
+			}
+		}
+	}
+	
+	private boolean isAssignableToAnyOf(Object value, Collection<Class<?>> dataTypes) {
+		for (Class<?> type: dataTypes) {
+			if (type.isAssignableFrom(value.getClass())) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

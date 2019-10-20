@@ -2,6 +2,7 @@ package lett.malcolm.consciouscalculator.emulator.events;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -11,6 +12,8 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 
 /**
  * This class defines rules around what data types and structures may be used in
@@ -23,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * <li> Integer
  * <li> Double
  * <li> Boolean
+ * <li> Percept
  * <li> List
  * <li> Map<by string>
  * </ul>
@@ -82,6 +86,7 @@ public class DataRules {
 	 * @return
 	 */
 	public static int measureSize(Object obj) {
+		assertValid(obj);
 		return measureSize(obj, new CycleHandler());
 	}
 	
@@ -91,6 +96,7 @@ public class DataRules {
 	 * @return
 	 */
 	public static <T> T clone(T obj) {
+		assertValid(obj);
 		return clone(obj, new CycleHandler());
 	}
 	
@@ -105,7 +111,10 @@ public class DataRules {
 	 * @param obj
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public static String stringOf(Object obj) {
+		assertValid(obj);
+		
 		if (obj == null) {
 			return "null";
 		}
@@ -115,8 +124,35 @@ public class DataRules {
 		else if (IMMUTABLE_SIMPLE_TYPES.contains(obj.getClass())) {
 			return String.valueOf(obj);
 		}
+		else if (obj instanceof Percept) {
+			return String.valueOf(obj);
+		}
+		else if (obj instanceof Collection) {
+			StringBuilder buf = new StringBuilder();
+			buf.append("[");
+			boolean first = true;
+			for (Object item: (Collection<?>)obj) {
+				if (!first) buf.append(",");
+				buf.append(stringOf(item));
+				first = false;
+			}
+			buf.append("]");
+			return buf.toString();
+		}
+		else if (obj instanceof Map) {
+			StringBuilder buf = new StringBuilder();
+			buf.append("{");
+			boolean first = true;
+			for (Map.Entry<String, Object> entry: ((Map<String, Object>)obj).entrySet()) {
+				if (!first) buf.append(",");
+				buf.append(entry.getKey()).append(":").append(stringOf(entry.getValue()));
+				first = false;
+			}
+			buf.append("}");
+			return buf.toString();
+		}
 		else {
-			return marshal(obj);
+			throw new UnsupportedOperationException("Don't know how to handle " + obj.getClass().getName());
 		}
 	}
 	
@@ -166,7 +202,7 @@ public class DataRules {
 		
 		if (!cycles.observeAndIsDuplicate(obj)) {
 			if (!isValidImmediateType(obj)) {
-				throw new IllegalArgumentException("Objects of type " + obj.getClass().getName()+" not permitted");
+				throw new IllegalArgumentException("Objects of type " + obj.getClass().getName()+" not permitted by Data Rules");
 			}
 			
 			// recurse
@@ -185,6 +221,7 @@ public class DataRules {
 	
 	/**
 	 * Recursively calculates the total size of the given object.
+	 * Assumes already validated object types.
 	 * @param obj
 	 * @return
 	 */
@@ -206,6 +243,9 @@ public class DataRules {
 			else if (IMMUTABLE_SIMPLE_TYPES.contains(obj.getClass())) {
 				return 1;
 			}
+			else if (obj instanceof Percept) {
+				return ((Percept) obj).size();
+			}
 			
 			// recursive types
 			// (1 for the collection itself)
@@ -225,7 +265,7 @@ public class DataRules {
 				}
 			}
 			else {
-				throw new IllegalArgumentException("Objects of type " + obj.getClass().getName()+" not permitted");
+				throw new UnsupportedOperationException("Don't know how to handle " + obj.getClass().getName());
 			}
 			
 			return size;
@@ -234,6 +274,7 @@ public class DataRules {
 	
 	/**
 	 * Recursively generates a deep clone of the given object.
+	 * Assumes already validated obj types.
 	 * @param obj
 	 * @return
 	 */
@@ -254,6 +295,9 @@ public class DataRules {
 			// immutable, so no need to clone
 			clone = obj;
 		}
+		else if (obj instanceof Percept) {
+			clone = ((Percept) obj).clone();
+		}
 		else if (obj instanceof List) {
 			List<Object> cloneList = new ArrayList<>();
 			for (Object item: (List<Object>) obj) {
@@ -269,7 +313,7 @@ public class DataRules {
 			clone = cloneMap;
 		}
 		else {
-			throw new IllegalArgumentException("Objects of type " + obj.getClass().getName()+" not permitted");
+			throw new UnsupportedOperationException("Don't know how to handle " + obj.getClass().getName());
 		}
 		
 		// track and return
@@ -327,10 +371,13 @@ public class DataRules {
 		if (IMMUTABLE_SIMPLE_TYPES.contains(obj.getClass())) {
 			return true;
 		}
-		if (obj instanceof List) {
+		else if (obj instanceof Percept) {
 			return true;
 		}
-		if (obj instanceof Map) {
+		else if (obj instanceof List) {
+			return true;
+		}
+		else if (obj instanceof Map) {
 			return true;
 		}
 		return false;

@@ -20,6 +20,7 @@ abstract class BaseEvent implements Event {
 	private Instant timestamp;
 	//private int size = 1; // dynamically calculated in size()
 	private Set<EventTag> tags = new HashSet<>();
+	private Set<String> references = new HashSet<>();
 	private Object data;
 	private Clock clock;
 			
@@ -62,8 +63,13 @@ abstract class BaseEvent implements Event {
 			buf.append(tag).append(",");
 		}
 		
+		// references
+		for (String reference: references) {
+			buf.append("ref=").append(reference.substring(0,5)).append(",");
+		}
+		
 		// content
-		buf.append(DataRules.marshal(data));
+		buf.append(DataRules.stringOf(data));
 		
 		buf.append("}");
 		return buf.toString();
@@ -94,6 +100,10 @@ abstract class BaseEvent implements Event {
 		return tags;
 	}
 
+	public Set<String> references() {
+		return references;
+	}
+
 	@Override
 	public Object data() {
 		return data;
@@ -112,9 +122,19 @@ abstract class BaseEvent implements Event {
 	}
 
 	public void setTags(Set<EventTag> tags) {
+		if (tags == null) {
+			tags = new HashSet<>();
+		}
 		this.tags = tags;
 	}
 
+	public void setReferences(Set<String> references) {
+		if (references == null) {
+			references = new HashSet<>();
+		}
+		this.references = references;
+	}
+	
 	public void setData(Object data) {
 		DataRules.assertValid(data);
 		this.data = data;
