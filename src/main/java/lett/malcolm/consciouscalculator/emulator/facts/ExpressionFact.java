@@ -1,4 +1,4 @@
-package lett.malcolm.consciouscalculator.emulator.ltm.math;
+package lett.malcolm.consciouscalculator.emulator.facts;
 
 import java.util.Collections;
 import java.util.List;

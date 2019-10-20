@@ -1,4 +1,4 @@
-package lett.malcolm.consciouscalculator.emulator.ltm.math;
+package lett.malcolm.consciouscalculator.emulator.facts;
 
 /**
  * Represents a mathematical equation, with a LHS and RHS.

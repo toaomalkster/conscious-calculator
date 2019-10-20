@@ -11,14 +11,14 @@ import org.slf4j.LoggerFactory;
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.events.TextRequestEvent;
+import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
+import lett.malcolm.consciouscalculator.emulator.facts.NumberFact;
+import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact;
+import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact.OperatorSymbol;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
-import lett.malcolm.consciouscalculator.emulator.ltm.math.ExpressionFact;
-import lett.malcolm.consciouscalculator.emulator.ltm.math.NumberFact;
-import lett.malcolm.consciouscalculator.emulator.ltm.math.OperatorFact;
-import lett.malcolm.consciouscalculator.emulator.ltm.math.OperatorFact.OperatorSymbol;
 
 /**
  * Detects textual mathematical expressions within received command request events,
