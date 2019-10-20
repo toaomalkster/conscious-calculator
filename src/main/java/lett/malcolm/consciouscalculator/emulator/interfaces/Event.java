@@ -3,6 +3,8 @@ package lett.malcolm.consciouscalculator.emulator.interfaces;
 import java.time.Instant;
 import java.util.Set;
 
+import lett.malcolm.consciouscalculator.emulator.events.DataRules;
+
 public interface Event extends Cloneable {
 	
 	/**
@@ -28,9 +30,16 @@ public interface Event extends Cloneable {
 	 * Meta-data, used to identify broad categories of events an different scales,
 	 * and to flag state against the event.
 	 * eg: to flag that the event was a request, or that it has been completed.
-	 * @return
+	 * @return non-empty set - mutable
 	 */
 	public Set<EventTag> tags();
+	
+	/**
+	 * GUID references to other events in the same memory region (WM, STM, LTM),
+	 * or to facts in LTM.
+	 * @return non-empty set - mutable
+	 */
+	public Set<String> references();
 	
 	/**
 	 * Data always conforms to rules set by {@link DataRules}.

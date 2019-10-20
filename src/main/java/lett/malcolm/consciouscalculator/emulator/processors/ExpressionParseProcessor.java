@@ -13,7 +13,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 
 /**
  * Detects textual mathematical expressions within received command request events,
- * parsed the expressions, and outputs them as Expression events.
+ * parsed the expressions, and outputs them as ExpressionFact events.
  * 
  * Known Event types acted on by the this processor:
  * - {@link TextRequestEvent}
@@ -82,7 +82,7 @@ public class ExpressionParseProcessor implements Processor {
 				memoryItem.data() instanceof String;
 	}
 
-	// TODO parse to an Expression object
+	// TODO parse to an ExpressionFact object
 	private static Object parseExpression(String text) {
 		// TODO
 		

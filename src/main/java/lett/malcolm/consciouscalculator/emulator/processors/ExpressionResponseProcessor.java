@@ -51,7 +51,7 @@ public class ExpressionResponseProcessor implements Processor {
 				!memoryItem.tags().contains(EventTag.HANDLED) &&
 				memoryItem.tags().contains(EventTag.REQUEST) &&
 				
-				// TODO use proper Expression logic to detect whether fully evaluated
+				// TODO use proper ExpressionFact logic to detect whether fully evaluated
 				((String) memoryItem.data()).contains("=");
 	}
 }
