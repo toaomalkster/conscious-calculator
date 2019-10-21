@@ -8,6 +8,12 @@ public class TryEmulator {
 		Emulator emulator = new Emulator();
 		emulator.sendCommand("3 + 5");
 	}
+
+	@Test
+	public void evaluateTestableEquation() {
+		Emulator emulator = new Emulator();
+		emulator.sendCommand("3 + 5 = 9");
+	}
 	
 	@Test
 	public void solve3PlusUnknownEquals8() {

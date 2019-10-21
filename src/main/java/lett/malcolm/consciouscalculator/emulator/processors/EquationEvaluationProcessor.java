@@ -136,6 +136,12 @@ public class EquationEvaluationProcessor implements Processor {
 
 	// extremely simple implementation for now
 	private Percept evaluateExpression(List<Percept> tokens) {
+		// base-case: just one number
+		if (tokens.size() == 1 && tokens.get(0).data() instanceof Number) {
+			return tokens.get(0);
+		}
+
+		// expression with operator
 		OperatorSymbol op = getExpressionOperator(tokens);
 		
 		Number result;
