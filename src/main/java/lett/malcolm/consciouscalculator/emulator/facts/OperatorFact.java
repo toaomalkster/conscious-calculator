@@ -9,6 +9,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
  * Represents a mathematical operator, as used within an expression.
  */
 // FIXME blindly assumes integers
+//TODO reference ExpressionTokenFact
 public class OperatorFact implements Fact {
 	public static final String GUID = OperatorFact.class.getSimpleName();
 	
@@ -103,8 +104,7 @@ public class OperatorFact implements Fact {
 		/**
 		 * 
 		 * @param code
-		 * @return
-		 * @throws IllegalArgumentException if not known
+		 * @return symbol or null if not known
 		 */
 		public static OperatorSymbol valueOfCodeOrNull(String code) {
 			for (OperatorSymbol symbol: values()) {
@@ -112,7 +112,7 @@ public class OperatorFact implements Fact {
 					return symbol;
 				}
 			}
-			throw new IllegalArgumentException("Unrecognised operator '"+code+"'");
+			return null;
 		}
 	}
 }

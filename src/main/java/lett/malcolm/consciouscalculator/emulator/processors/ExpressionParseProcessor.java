@@ -4,6 +4,8 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +13,10 @@ import org.slf4j.LoggerFactory;
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.events.TextRequestEvent;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationFact.EquationOperatorSymbol;
 import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
+import lett.malcolm.consciouscalculator.emulator.facts.ExpressionTokenFact;
 import lett.malcolm.consciouscalculator.emulator.facts.NumberFact;
 import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact;
 import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact.OperatorSymbol;
@@ -112,21 +117,61 @@ public class ExpressionParseProcessor implements Processor {
 		
 		// simplistic implementation for now
 		List<Object> tokens = tokenize(text);
-		boolean accepted = false;
-		if (isTypePattern(tokens, Number.class, OperatorSymbol.class, Number.class)) {
-			OperatorSymbol operator = (OperatorSymbol) tokens.get(1);
-			if (operator.numArgs() == 2) {
-				accepted = true;
+		Confidence confidence = Confidence.FAIL;
+		if (tokens.stream().anyMatch(isEquationOperator())) {
+			if (isTypePattern(tokens, NumberOrString.class, OperatorSymbol.class, NumberOrString.class, EquationOperatorSymbol.class, NumberOrString.class)) {
+				OperatorSymbol operator = (OperatorSymbol) tokens.get(1);
+				if (tokens.get(0) instanceof String || tokens.get(2) instanceof String || tokens.get(4) instanceof String) {
+					confidence = Confidence.UNRECOGNISED_TOKENS;
+				}
+				else if (operator.numArgs() != 2) {
+					confidence = Confidence.WRONG_NUM_ARGS;
+				}
+				else {
+					confidence = Confidence.STRONG;
+				}
+			}
+			else if (isTypePattern(tokens, OperatorSymbol.class, NumberOrString.class, EquationOperatorSymbol.class, NumberOrString.class)) {
+				OperatorSymbol operator = (OperatorSymbol) tokens.get(0);
+				if (tokens.get(1) instanceof String || tokens.get(3) instanceof String) {
+					confidence = Confidence.UNRECOGNISED_TOKENS;
+				}
+				else if (operator.numArgs() != 1) {
+					confidence = Confidence.WRONG_NUM_ARGS;
+				}
+				else {
+					confidence = Confidence.STRONG;
+				}
 			}
 		}
-		else if (isTypePattern(tokens, OperatorSymbol.class, Number.class)) {
-			OperatorSymbol operator = (OperatorSymbol) tokens.get(0);
-			if (operator.numArgs() == 1) {
-				accepted = true;
+		else {
+			if (isTypePattern(tokens, NumberOrString.class, OperatorSymbol.class, NumberOrString.class)) {
+				OperatorSymbol operator = (OperatorSymbol) tokens.get(1);
+				if (tokens.get(0) instanceof String || tokens.get(2) instanceof String) {
+					confidence = Confidence.UNRECOGNISED_TOKENS;
+				}
+				else if (operator.numArgs() != 2) {
+					confidence = Confidence.WRONG_NUM_ARGS;
+				}
+				else {
+					confidence = Confidence.STRONG;
+				}
+			}
+			else if (isTypePattern(tokens, OperatorSymbol.class, NumberOrString.class)) {
+				OperatorSymbol operator = (OperatorSymbol) tokens.get(0);
+				if (tokens.get(1) instanceof String) {
+					confidence = Confidence.UNRECOGNISED_TOKENS;
+				}
+				else if (operator.numArgs() != 1) {
+					confidence = Confidence.WRONG_NUM_ARGS;
+				}
+				else {
+					confidence = Confidence.STRONG;
+				}
 			}
 		}
 		
-		if (accepted) {
+		if (confidence != Confidence.FAIL) {
 			List<Percept> percepts = new ArrayList<>();
 			for (Object token: tokens) {
 				if (token instanceof Number) {
@@ -136,6 +181,13 @@ public class ExpressionParseProcessor implements Processor {
 					// not allowed to store raw enums, so marshal to code String
 					percepts.add(new Percept(OperatorFact.GUID, ((OperatorSymbol) token).code()));
 				}
+				else if (token instanceof EquationOperatorSymbol) {
+					// not allowed to store raw enums, so marshal to code String
+					percepts.add(new Percept(EquationFact.GUID, ((EquationOperatorSymbol) token).code()));
+				}
+				else if (token instanceof String) {
+					percepts.add(new Percept(ExpressionTokenFact.GUID, token));
+				}
 				else {
 					throw new UnsupportedOperationException("Don't know what to do with a "+token.getClass().getSimpleName());
 				}
@@ -144,19 +196,7 @@ public class ExpressionParseProcessor implements Processor {
 			return new Percept(ExpressionFact.GUID, percepts);
 		}
 		
-		return null;
-	}
-	
-	private static boolean isTypePattern(List<Object> tokens, Class<?>... tokenTypes) {
-		if (tokens.size() != tokenTypes.length) {
-			return false;
-		}
-		for (int i=0; i < tokenTypes.length; i++) {
-			if (!tokenTypes[i].isAssignableFrom(tokens.get(i).getClass())) {
-				return false;
-			}
-		}
-		return true;
+		throw new IllegalArgumentException("Not a recognised pattern: "+typePatternAsStrings(tokens));
 	}
 	
 	private static List<Object> tokenize(String text) {
@@ -170,8 +210,12 @@ public class ExpressionParseProcessor implements Processor {
 				value = Integer.parseInt(tokenStr);
 			}
 			else if (OperatorSymbol.valueOfCodeOrNull(tokenStr) != null) {
-				// operator
+				// expression operator
 				value = OperatorSymbol.valueOfCodeOrNull(tokenStr);
+			}
+			else if (EquationOperatorSymbol.valueOfCodeOrNull(tokenStr) != null) {
+				// equation operator
+				value = EquationOperatorSymbol.valueOfCodeOrNull(tokenStr);
 			}
 			else {
 				// unknown string
@@ -181,5 +225,58 @@ public class ExpressionParseProcessor implements Processor {
 		}
 		
 		return tokens;
+	}
+	
+	private static boolean isTypePattern(List<Object> tokens, Class<?>... tokenTypes) {
+		if (tokens.size() != tokenTypes.length) {
+			return false;
+		}
+		for (int i=0; i < tokenTypes.length; i++) {
+			if (tokenTypes[i].equals(NumberOrString.class)) {
+				if (!(tokens.get(i) instanceof Number || tokens.get(i) instanceof String)) {
+					return false;
+				}
+			}
+			else if (!tokenTypes[i].isAssignableFrom(tokens.get(i).getClass())) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private static List<String> typePatternAsStrings(List<Object> tokens) {
+		return tokens.stream().map(t -> className(t)).collect(Collectors.toList());
+	}
+	
+	private static Predicate<Object> isEquationOperator() {
+		return (t) -> t instanceof EquationOperatorSymbol;
+	}
+	
+	private static String className(Object obj) {
+		// cope with enum types using per-enum implementations (which create anonymous inner classes)
+		if (obj.getClass().getSimpleName().equals("") && obj.getClass().getEnclosingClass() != null) {
+			return obj.getClass().getEnclosingClass().getSimpleName();
+		}
+		
+		return obj.getClass().getSimpleName();
+	}
+	
+	private static enum Confidence {
+		FAIL(0.0),
+		WRONG_NUM_ARGS(0.1),
+		UNRECOGNISED_TOKENS(0.2),
+		STRONG(1.0);
+		
+		// relative strength
+		private final double strength;
+		
+		private Confidence(double strength) {
+			this.strength = strength;
+		}
+	}
+	
+	// placeholder class
+	private static class NumberOrString {
+		
 	}
 }
