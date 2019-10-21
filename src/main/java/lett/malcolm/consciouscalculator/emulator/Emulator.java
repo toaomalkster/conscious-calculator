@@ -20,7 +20,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionEvaluationProcessor;
-import lett.malcolm.consciouscalculator.emulator.processors.ExpressionParseProcessor;
+import lett.malcolm.consciouscalculator.emulator.processors.ExpressionAndEquationParseProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionResponseProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor;
 
@@ -78,7 +78,7 @@ public class Emulator {
 		inputInterceptors.add(consciousFeedbackToSTMInterceptor);
 		inputInterceptors.add(new StuckThoughtInterceptor(clock));
 		processors.add(new ExpressionEvaluationProcessor(clock));
-		processors.add(new ExpressionParseProcessor(clock));
+		processors.add(new ExpressionAndEquationParseProcessor(clock));
 		processors.add(new ExpressionResponseProcessor(clock));
 		processors.add(new SpeakActionProcessor(clock));
 		

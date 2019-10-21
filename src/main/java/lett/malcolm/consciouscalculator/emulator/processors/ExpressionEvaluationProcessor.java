@@ -22,6 +22,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 
 /**
  * Evaluates un-evaluated expressions.
+ * eg: "3 + 5" => "8"
  * 
  * Known Event types acted on by the this processor:
  * - {@link PerceptEvent}

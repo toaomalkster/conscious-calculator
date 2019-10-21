@@ -26,18 +26,18 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 
 /**
- * Detects textual mathematical expressions within received command request events,
- * parsed the expressions, and outputs them as ExpressionFact events.
+ * Detects textual mathematical expressions and equations within received command request events,
+ * parses the expressions, and outputs them as ExpressionFact or EquationFact events.
  * 
  * Known Event types acted on by the this processor:
  * - {@link TextRequestEvent}
  */
-public class ExpressionParseProcessor implements Processor {
-	private static final Logger LOG = LoggerFactory.getLogger(ExpressionParseProcessor.class);
+public class ExpressionAndEquationParseProcessor implements Processor {
+	private static final Logger LOG = LoggerFactory.getLogger(ExpressionAndEquationParseProcessor.class);
 	
 	private Clock clock;
 	
-	public ExpressionParseProcessor(Clock clock) {
+	public ExpressionAndEquationParseProcessor(Clock clock) {
 		this.clock = clock;
 	}
 
@@ -193,7 +193,12 @@ public class ExpressionParseProcessor implements Processor {
 				}
 			}
 			
-			return new Percept(ExpressionFact.GUID, percepts);
+			if (tokens.stream().anyMatch(isEquationOperator())) {
+				return new Percept(EquationFact.GUID, percepts);
+			}
+			else {
+				return new Percept(ExpressionFact.GUID, percepts);
+			}
 		}
 		
 		throw new IllegalArgumentException("Not a recognised pattern: "+typePatternAsStrings(tokens));
