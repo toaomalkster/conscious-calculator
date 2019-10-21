@@ -14,7 +14,8 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.events.TextRequestEvent;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
-import lett.malcolm.consciouscalculator.emulator.facts.EquationFact.EquationOperatorSymbol;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact.EquationOperatorSymbol;
 import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
 import lett.malcolm.consciouscalculator.emulator.facts.ExpressionTokenFact;
 import lett.malcolm.consciouscalculator.emulator.facts.NumberFact;
@@ -61,8 +62,11 @@ public class ExpressionAndEquationParseProcessor implements Processor {
 			if (accepts(memoryItem)) {
 				String text = (String) memoryItem.data();
 				Percept expr;
+				Confidence confidence;
 				try {
-					expr = parseExpression(text);
+					ConfidentPercept res = parseExpression(text);
+					expr = res.percept;
+					confidence = res.confidence;
 				} catch (RuntimeException ignored) {
 					// not an event this processor is interested in
 					LOG.trace("Unable to parse '"+text+"': " + ignored.getMessage());
@@ -72,7 +76,12 @@ public class ExpressionAndEquationParseProcessor implements Processor {
 				if (expr != null) {
 					PerceptEvent exprEvent = new PerceptEvent(clock, expr);
 					//exprEvent.tags().addAll(memoryItem.tags());
-					exprEvent.setStrength(memoryItem.strength() + 0.01);
+					if (confidence == Confidence.STRONG) {
+						exprEvent.setStrength(memoryItem.strength() + 0.01);
+					}
+					else {
+						exprEvent.setStrength(memoryItem.strength() * confidence.strength);
+					}
 					exprEvent.references().add(memoryItem.guid());
 					
 					Event updatedMemoryItem = memoryItem.clone();
@@ -102,7 +111,7 @@ public class ExpressionAndEquationParseProcessor implements Processor {
 	}
 
 	// TODO use Antlr
-	private Percept parseExpression(String text) {
+	private ConfidentPercept parseExpression(String text) {
 		// short-cut: check it contains a known operator
 		boolean found = false;
 		for (OperatorSymbol symbol: OperatorFact.OperatorSymbol.values()) {
@@ -183,7 +192,7 @@ public class ExpressionAndEquationParseProcessor implements Processor {
 				}
 				else if (token instanceof EquationOperatorSymbol) {
 					// not allowed to store raw enums, so marshal to code String
-					percepts.add(new Percept(EquationFact.GUID, ((EquationOperatorSymbol) token).code()));
+					percepts.add(new Percept(EquationOperatorFact.GUID, ((EquationOperatorSymbol) token).code()));
 				}
 				else if (token instanceof String) {
 					percepts.add(new Percept(ExpressionTokenFact.GUID, token));
@@ -194,10 +203,10 @@ public class ExpressionAndEquationParseProcessor implements Processor {
 			}
 			
 			if (tokens.stream().anyMatch(isEquationOperator())) {
-				return new Percept(EquationFact.GUID, percepts);
+				return new ConfidentPercept(confidence, new Percept(EquationFact.GUID, percepts));
 			}
 			else {
-				return new Percept(ExpressionFact.GUID, percepts);
+				return new ConfidentPercept(confidence, new Percept(ExpressionFact.GUID, percepts));
 			}
 		}
 		
@@ -264,6 +273,16 @@ public class ExpressionAndEquationParseProcessor implements Processor {
 		}
 		
 		return obj.getClass().getSimpleName();
+	}
+	
+	private static class ConfidentPercept {
+		Confidence confidence;
+		Percept percept;
+
+		public ConfidentPercept(Confidence confidence, Percept percept) {
+			this.confidence = confidence;
+			this.percept = percept;
+		}
 	}
 	
 	private static enum Confidence {

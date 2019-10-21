@@ -56,7 +56,7 @@ abstract class BaseEvent implements Event {
 		buf.append(QuantityUtils.toShortMillisString(age)).append(",");
 		
 		// strength
-		buf.append(strength).append(",");
+		buf.append(String.format("%.03f", strength)).append(",");
 		
 		// tags
 		for (EventTag tag: tags) {
