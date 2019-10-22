@@ -10,10 +10,13 @@ import org.slf4j.LoggerFactory;
 
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
-import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact.EquationOperatorSymbol;
 import lett.malcolm.consciouscalculator.emulator.facts.NumberFact;
 import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact;
 import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact.OperatorSymbol;
+import lett.malcolm.consciouscalculator.emulator.facts.StatementTruthFact;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
@@ -21,8 +24,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 
 /**
- * Evaluates un-evaluated expressions.
- * eg: "3 + 5" => "8"
+ * Evaluates and tests un-evaluated equations.
+ * eg: "3 + 5 = 9" => false
  * 
  * Known Event types acted on by the this processor:
  * - {@link PerceptEvent}
@@ -33,13 +36,14 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 //        -- Maybe STM should be a separate clone to avoid that happening?
 // Or REPLACE the existing event?
 //
-// TODO this class can be merged with EquationEvaluationProcessor 
-public class ExpressionEvaluationProcessor implements Processor {
-	private static final Logger LOG = LoggerFactory.getLogger(ExpressionEvaluationProcessor.class);
+// TODO this class can be merged with ExpressionEvaluationProcessor, as
+// this implementation can handle both expressions and equations.
+public class EquationEvaluationProcessor implements Processor {
+	private static final Logger LOG = LoggerFactory.getLogger(EquationEvaluationProcessor.class);
 
 	private Clock clock;
 	
-	public ExpressionEvaluationProcessor(Clock clock) {
+	public EquationEvaluationProcessor(Clock clock) {
 		this.clock = clock;
 	}
 
@@ -87,17 +91,19 @@ public class ExpressionEvaluationProcessor implements Processor {
 		return null;
 	}
 	
+	// TODO check if expression is not already evaluated by instead looking in WM
+	// for an evaluated form
 	private static boolean accepts(Event memoryItem) {
 		if (!memoryItem.tags().contains(EventTag.COMPLETED) &&
 				!memoryItem.tags().contains(EventTag.HANDLED) &&
 				memoryItem instanceof PerceptEvent) {
 			if (memoryItem.data() instanceof Percept) {
 				Percept percept = (Percept) memoryItem.data();
-				return percept.references().contains(ExpressionFact.GUID);
+				return percept.references().contains(EquationFact.GUID);
 			}
 		}
 		
-		// TODO check if expression is not already evaluated, and that it has unknowns in the right place
+		// TODO check it has unknowns in the right place
 		
 		return false;
 	}
@@ -111,7 +117,32 @@ public class ExpressionEvaluationProcessor implements Processor {
 	 */
 	private Percept evaluate(Percept expr) {
 		List<Percept> tokens = (List<Percept>) expr.data();
-		OperatorSymbol op = getOperator(tokens);
+		if (getEquationOperatorOrNull(tokens) != null) {
+			EquationParts parts = splitEquation(tokens);
+			return evaluateEquation(parts.lhs, getEquationOperatorOrNull(tokens), parts.rhs);
+		}
+		else {
+			return evaluateExpression(tokens);
+		}
+	}
+	
+	private Percept evaluateEquation(List<Percept> lhs, EquationOperatorSymbol equationOperator, List<Percept> rhs) {
+		Percept lhsResult = evaluateExpression(lhs);
+		Percept rhsResult = evaluateExpression(rhs);
+		
+		boolean test = equationOperator.apply((Number) lhsResult.data(), (Number) rhsResult.data());
+		return new Percept(StatementTruthFact.GUID, test);
+	}
+
+	// extremely simple implementation for now
+	private Percept evaluateExpression(List<Percept> tokens) {
+		// base-case: just one number
+		if (tokens.size() == 1 && tokens.get(0).data() instanceof Number) {
+			return tokens.get(0);
+		}
+
+		// expression with operator
+		OperatorSymbol op = getExpressionOperator(tokens);
 		
 		Number result;
 		if (op.numArgs() == 1) {
@@ -132,13 +163,33 @@ public class ExpressionEvaluationProcessor implements Processor {
 		return new Percept(NumberFact.GUID, result);
 	}
 	
-	private OperatorSymbol getOperator(List<Percept> tokens) {
+	private OperatorSymbol getExpressionOperator(List<Percept> tokens) {
 		for (Percept token: tokens) {
 			if (token.references().contains(OperatorFact.GUID)) {
 				return OperatorSymbol.valueOfCode((String) token.data());
 			}
 		}
 		throw new IllegalArgumentException("Wrong token pattern - no operator");
+	}
+
+	private EquationOperatorFact.EquationOperatorSymbol getEquationOperatorOrNull(List<Percept> tokens) {
+		return tokens.stream()
+			.filter(t -> t.references().contains(EquationOperatorFact.GUID))
+			.map(t -> EquationOperatorSymbol.valueOfCode((String) t.data()))
+			.findFirst()
+			.orElse(null);
+	}
+	
+	private EquationParts splitEquation(List<Percept> tokens) {
+		Percept operatorToken = tokens.stream()
+				.filter(t -> t.references().contains(EquationOperatorFact.GUID))
+				.findFirst().get();
+		
+		int index = tokens.indexOf(operatorToken);
+		EquationParts parts = new EquationParts(); 
+		parts.lhs = tokens.subList(0, index);
+		parts.rhs = tokens.subList(index+1, tokens.size());
+		return parts;
 	}
 	
 	private void assertTokenTypes(List<Percept> tokens, Fact... facts) {
@@ -159,5 +210,10 @@ public class ExpressionEvaluationProcessor implements Processor {
 			}
 		}
 		return false;
+	}
+	
+	private static class EquationParts {
+		List<Percept> lhs;
+		List<Percept> rhs;
 	}
 }

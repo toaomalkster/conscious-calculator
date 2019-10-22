@@ -1,5 +1,10 @@
 package lett.malcolm.consciouscalculator.emulator.facts;
 
+import java.util.Collections;
+import java.util.List;
+
+import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
+
 /**
  * Represents a mathematical equation, with a LHS and RHS.
  * 
@@ -9,7 +14,19 @@ package lett.malcolm.consciouscalculator.emulator.facts;
  * 
  * Can evaluate and test the equation with supplied values for unknowns.
  */
-public class EquationFact {
+public class EquationFact implements Fact {
 	public static final String GUID = EquationFact.class.getSimpleName();
 
+	@Override
+	public String guid() {
+		return GUID;
+	}
+
+	/**
+	 * Represented as a list of PerceptEvents.
+	 */
+	@Override
+	public List<Class<?>> dataTypes() {
+		return Collections.singletonList(List.class);
+	}
 }

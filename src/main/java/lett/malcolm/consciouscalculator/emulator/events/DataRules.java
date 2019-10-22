@@ -91,6 +91,19 @@ public class DataRules {
 	}
 	
 	/**
+	 * Checks whether the provided object graphs are identical. 
+	 * @param obj1 must meet data rules
+	 * @param obj2 must meet data rules
+	 */
+	public static boolean isSame(Object obj1, Object obj2) {
+		assertValid(obj1);
+		assertValid(obj2);
+		
+		// now can use straight Object.equals()
+		return (obj1 == obj2) || (obj1 != null && obj1.equals(obj2));
+	}
+	
+	/**
 	 * Returns a deep clone of the given object.
 	 * @param obj
 	 * @return

@@ -13,7 +13,6 @@ import lett.malcolm.consciouscalculator.emulator.events.ActionEvent;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
 import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
-import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact.OperatorSymbol;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
@@ -71,6 +70,7 @@ public class ExpressionResponseProcessor implements Processor {
 	private String evaluate(Percept percept) {
 		if (percept.references().contains(ExpressionFact.GUID) ||
 				percept.references().contains(EquationFact.GUID)) {
+			// render expression or equation
 			StringBuilder buf = new StringBuilder();
 			boolean first = true;
 			for (Percept token: (Collection<Percept>) percept.data()) {
@@ -80,11 +80,8 @@ public class ExpressionResponseProcessor implements Processor {
 			}
 			return buf.toString();
 		}
-		else if (percept.data() instanceof Number || percept.data() instanceof String){
+		else if (percept.data() instanceof Number || percept.data() instanceof Boolean || percept.data() instanceof String){
 			return String.valueOf(percept.data());
-		}
-		else if (percept.data() instanceof OperatorSymbol) {
-			return ((OperatorSymbol) percept.data()).code();
 		}
 		else {
 			throw new IllegalArgumentException("Wrong percept expression - don't know how to deal with percept: "+percept.toString());

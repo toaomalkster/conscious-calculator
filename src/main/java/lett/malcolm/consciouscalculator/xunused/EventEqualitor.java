@@ -1,7 +1,12 @@
-package lett.malcolm.consciouscalculator.emulator.events;
+package lett.malcolm.consciouscalculator.xunused;
 
+import lett.malcolm.consciouscalculator.emulator.events.DataRules;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
+/**
+ * @deprecated currently unused
+ */
+@Deprecated
 public class EventEqualitor {
 	/**
 	 * Convenient factory method for an {@link EventEqualitor} suitable for detecting
@@ -27,22 +32,6 @@ public class EventEqualitor {
 		}
 		
 		// data
-		return isDataSame(one.data(), two.data());
-	}
-	
-	private boolean isDataSame(Object one, Object two) {
-		if (one == two) {
-			return true;
-		}
-		else if (one == null || two == null) {
-			return false;
-		}
-		else if (one instanceof Event && two instanceof Event) {
-			// handle occasional recursive data
-			return isSame((Event) one, (Event) two);
-		}
-		else {
-			return one.equals(two);
-		}
+		return DataRules.isSame(one.data(), two.data());
 	}
 }
