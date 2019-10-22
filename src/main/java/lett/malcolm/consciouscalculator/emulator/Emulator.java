@@ -17,7 +17,9 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.ActionAwareProcessor
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.STMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 import lett.malcolm.consciouscalculator.emulator.processors.EquationEvaluationProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionAndEquationParseProcessor;
@@ -41,6 +43,7 @@ import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor
 public class Emulator {
 	public static final int DEFAULT_WORKING_MEMORY_MAX_SIZE = 100;
 	public static final int DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE = 1000;
+	public static final int DEFAULT_LONG_TERM_MEMORY_MAX_SIZE = 1_000_000;
 	
 	private static final Logger logger = LoggerFactory.getLogger(Emulator.class);
 
@@ -48,6 +51,7 @@ public class Emulator {
 	private AttentionAttenuator attentionAttenuator;
 	private WorkingMemory workingMemory;
 	private ShortTermMemory shortTermMemory;
+	private LongTermMemory longTermMemory;
 	private ConsciousFeedbacker consciousFeedbacker;
 	private ConsciousFeedbackToSTMInterceptor consciousFeedbackToSTMInterceptor;
 	
@@ -67,6 +71,7 @@ public class Emulator {
 		this.clock = Clock.systemDefaultZone();
 		this.workingMemory = new WorkingMemory(DEFAULT_WORKING_MEMORY_MAX_SIZE);
 		this.shortTermMemory = new ShortTermMemory(DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE);
+		this.longTermMemory = new LongTermMemory(DEFAULT_LONG_TERM_MEMORY_MAX_SIZE);
 		this.attentionAttenuator = new AttentionAttenuator(commandStream,
 				consciousFeedbackStream, workingMemory);
 		this.consciousFeedbacker = new ConsciousFeedbacker(workingMemory);
@@ -89,6 +94,12 @@ public class Emulator {
 		for (Processor processor: processors) {
 			if (processor instanceof ActionAwareProcessor) {
 				((ActionAwareProcessor) processor).setOutputStream(outputStream);
+			}
+			if (processor instanceof STMAwareProcessor) {
+				((STMAwareProcessor) processor).setSTM(shortTermMemory);
+			}
+			if (processor instanceof LTMAwareProcessor) {
+				((LTMAwareProcessor) processor).setLTM(longTermMemory);
 			}
 		}
 	}
