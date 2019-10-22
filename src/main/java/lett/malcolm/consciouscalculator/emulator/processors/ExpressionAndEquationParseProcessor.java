@@ -33,6 +33,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
  * Known Event types acted on by the this processor:
  * - {@link TextRequestEvent}
  */
+// TODO should it avoid emitting unless a GoingNowhereEvent is present?
 public class ExpressionAndEquationParseProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(ExpressionAndEquationParseProcessor.class);
 	
