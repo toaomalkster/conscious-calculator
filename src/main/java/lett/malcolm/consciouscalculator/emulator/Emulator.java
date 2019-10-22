@@ -23,6 +23,7 @@ import lett.malcolm.consciouscalculator.emulator.processors.EquationEvaluationPr
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionAndEquationParseProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionEvaluationProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionResponseProcessor;
+import lett.malcolm.consciouscalculator.emulator.processors.FindMatchingConceptProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor;
 
 /**
@@ -83,6 +84,7 @@ public class Emulator {
 		processors.add(new ExpressionAndEquationParseProcessor(clock));
 		processors.add(new ExpressionResponseProcessor(clock));
 		processors.add(new SpeakActionProcessor(clock));
+		processors.add(new FindMatchingConceptProcessor(clock));
 		
 		for (Processor processor: processors) {
 			if (processor instanceof ActionAwareProcessor) {
