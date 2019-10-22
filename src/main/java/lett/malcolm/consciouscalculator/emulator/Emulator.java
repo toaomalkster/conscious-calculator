@@ -45,6 +45,9 @@ public class Emulator {
 	public static final int DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE = 1000;
 	public static final int DEFAULT_LONG_TERM_MEMORY_MAX_SIZE = 1_000_000;
 	
+	// number of ticks with no event updates before stopping
+	public static final int STAGNANT_TRIGGER_TOLERANCE = 5;
+	
 	private static final Logger logger = LoggerFactory.getLogger(Emulator.class);
 
 	private Clock clock;
@@ -81,8 +84,8 @@ public class Emulator {
 		this.inputInterceptors = new ArrayList<>();
 		this.processors = new ArrayList<>();
 		
-		inputInterceptors.add(new RequestCommandInterceptor(clock));
 		inputInterceptors.add(consciousFeedbackToSTMInterceptor);
+		inputInterceptors.add(new RequestCommandInterceptor(clock));
 		inputInterceptors.add(new StuckThoughtInterceptor(clock));
 		processors.add(new ExpressionEvaluationProcessor(clock));
 		processors.add(new EquationEvaluationProcessor(clock));
@@ -123,6 +126,7 @@ public class Emulator {
 	}
 	
 	private void controlLoop() {
+		int ticksWithoutUpdates = 0;
 		while (triggerQueue.poll() != null) {
 			List<Event> interceptedEvents = new ArrayList<>();
 			List<List<Event>> processedEventSets = new ArrayList<>();
@@ -164,7 +168,14 @@ public class Emulator {
 			// degrade strengths
 			workingMemory.degradeStrengths();
 			
+			// handle loop
 			if (updated) {
+				ticksWithoutUpdates = 0;
+			}
+			else {
+				ticksWithoutUpdates++;
+			}
+			if (updated || ticksWithoutUpdates < STAGNANT_TRIGGER_TOLERANCE) {
 				trigger();
 			}
 		}

@@ -13,7 +13,7 @@ public class StuckThoughtEvent extends BaseEvent implements Event {
 		super(clock);
 		this.references().add(latestEventGuid);
 		
-		// must not to store a null value
+		// best not to store a null value
 		this.setData(true);
 	}
 }
