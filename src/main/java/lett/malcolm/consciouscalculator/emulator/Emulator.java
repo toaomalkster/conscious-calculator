@@ -17,12 +17,15 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.ActionAwareProcessor
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.STMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 import lett.malcolm.consciouscalculator.emulator.processors.EquationEvaluationProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionAndEquationParseProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionEvaluationProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionResponseProcessor;
+import lett.malcolm.consciouscalculator.emulator.processors.FindMatchingConceptProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor;
 
 /**
@@ -40,6 +43,10 @@ import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor
 public class Emulator {
 	public static final int DEFAULT_WORKING_MEMORY_MAX_SIZE = 100;
 	public static final int DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE = 1000;
+	public static final int DEFAULT_LONG_TERM_MEMORY_MAX_SIZE = 1_000_000;
+	
+	// number of ticks with no event updates before stopping
+	public static final int STAGNANT_TRIGGER_TOLERANCE = 5;
 	
 	private static final Logger logger = LoggerFactory.getLogger(Emulator.class);
 
@@ -47,6 +54,7 @@ public class Emulator {
 	private AttentionAttenuator attentionAttenuator;
 	private WorkingMemory workingMemory;
 	private ShortTermMemory shortTermMemory;
+	private LongTermMemory longTermMemory;
 	private ConsciousFeedbacker consciousFeedbacker;
 	private ConsciousFeedbackToSTMInterceptor consciousFeedbackToSTMInterceptor;
 	
@@ -66,6 +74,7 @@ public class Emulator {
 		this.clock = Clock.systemDefaultZone();
 		this.workingMemory = new WorkingMemory(DEFAULT_WORKING_MEMORY_MAX_SIZE);
 		this.shortTermMemory = new ShortTermMemory(DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE);
+		this.longTermMemory = new LongTermMemory(DEFAULT_LONG_TERM_MEMORY_MAX_SIZE);
 		this.attentionAttenuator = new AttentionAttenuator(commandStream,
 				consciousFeedbackStream, workingMemory);
 		this.consciousFeedbacker = new ConsciousFeedbacker(workingMemory);
@@ -75,18 +84,25 @@ public class Emulator {
 		this.inputInterceptors = new ArrayList<>();
 		this.processors = new ArrayList<>();
 		
-		inputInterceptors.add(new RequestCommandInterceptor(clock));
 		inputInterceptors.add(consciousFeedbackToSTMInterceptor);
+		inputInterceptors.add(new RequestCommandInterceptor(clock));
 		inputInterceptors.add(new StuckThoughtInterceptor(clock));
 		processors.add(new ExpressionEvaluationProcessor(clock));
 		processors.add(new EquationEvaluationProcessor(clock));
 		processors.add(new ExpressionAndEquationParseProcessor(clock));
 		processors.add(new ExpressionResponseProcessor(clock));
 		processors.add(new SpeakActionProcessor(clock));
+		processors.add(new FindMatchingConceptProcessor(clock));
 		
 		for (Processor processor: processors) {
 			if (processor instanceof ActionAwareProcessor) {
 				((ActionAwareProcessor) processor).setOutputStream(outputStream);
+			}
+			if (processor instanceof STMAwareProcessor) {
+				((STMAwareProcessor) processor).setSTM(shortTermMemory);
+			}
+			if (processor instanceof LTMAwareProcessor) {
+				((LTMAwareProcessor) processor).setLTM(longTermMemory);
 			}
 		}
 	}
@@ -110,6 +126,7 @@ public class Emulator {
 	}
 	
 	private void controlLoop() {
+		int ticksWithoutUpdates = 0;
 		while (triggerQueue.poll() != null) {
 			List<Event> interceptedEvents = new ArrayList<>();
 			List<List<Event>> processedEventSets = new ArrayList<>();
@@ -151,7 +168,14 @@ public class Emulator {
 			// degrade strengths
 			workingMemory.degradeStrengths();
 			
+			// handle loop
 			if (updated) {
+				ticksWithoutUpdates = 0;
+			}
+			else {
+				ticksWithoutUpdates++;
+			}
+			if (updated || ticksWithoutUpdates < STAGNANT_TRIGGER_TOLERANCE) {
 				trigger();
 			}
 		}

@@ -30,6 +30,9 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
  * <li> List
  * <li> Map<by string>
  * </ul>
+ * Note: when adding any types to the list above, they MUST implement equals() and hashCode()
+ * for 'exact' match.
+ * 
  * 
  * Other rules for data types:
  * <ul>

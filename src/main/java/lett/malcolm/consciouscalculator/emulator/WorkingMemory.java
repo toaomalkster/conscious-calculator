@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,9 +98,103 @@ public class WorkingMemory {
 	}
 	
 	/**
-	 * Gets the chain of events, ending with the given guid (inclusive).
+	 * Gets all events directly referencing the specified guid, if any.
 	 * @param guid
-	 * @return chain, if found
+	 * @return found events in decreasing strength order, or empty list if none
+	 */
+	// FIXME not ideal to sort every time, but here as a quick work around for now
+	public List<Event> getReferencesTo(String guid) {
+		List<Event> list = contents.stream()
+				.filter(e -> e.references().contains(guid))
+				.sorted(Comparator.comparing(Event::strength).reversed())
+				.collect(Collectors.toList());
+		return Collections.unmodifiableList(list);
+	}
+	
+	/**
+	 * Gets the chain of events, starting with the given guid (inclusive).
+	 * 
+	 * Given the following relationships, this method returns the sequence (E1, E2, E3, E4):
+	 * <pre>
+	 *    E1#guid <- E2 <- E3 <- E4
+	 * </pre>
+	 * 
+	 * In the common scenario where events have multiple referencing events, creating a tree, the tree is flattened
+	 * and returned as a list.
+	 * @param event
+	 * @return chain or flattened tree, if found; empty list otherwise
+	 */
+	public List<Event> getChainStartingWith(Event event) {
+		return getChainStartingWith(event.guid());
+	}
+	
+	/**
+	 * Gets the chain of events, ending with the given guid (inclusive).
+	 * 
+	 * Given the following relationships, this method returns the sequence (E1, E2, E3, E4):
+	 * <pre>
+	 *    E1 <- E2 <- E3 <- E4#guid
+	 * </pre>
+	 * 
+	 * In the unlikely scenario that events reference back to multiple events, creating a tree, the tree is flattened
+	 * and returned as a list.
+	 * @param event
+	 * @return chain, if found; empty list otherwise
+	 */
+	public List<Event> getChainEndingWith(Event event) {
+		return getChainEndingWith(event.guid());
+	}
+	
+	/**
+	 * Gets the chain of events, starting with the given guid (inclusive).
+	 * 
+	 * Given the following relationships, this method returns the sequence (E1, E2, E3, E4):
+	 * <pre>
+	 *    E1#guid <- E2 <- E3 <- E4
+	 * </pre>
+	 * 
+	 * In the common scenario where events have multiple referencing events, creating a tree, the tree is flattened
+	 * and returned as a list.
+	 * @param guid
+	 * @return chain or flattened tree, if found; empty list otherwise
+	 */
+	public List<Event> getChainStartingWith(String guid) {
+		List<Event> chain = new ArrayList<>();
+		
+		Set<String> observed = new HashSet<>();
+		Queue<String> guids = new LinkedList<>();
+		guids.offer(guid);
+		
+		// start from 'guid' and work forwards
+		while (!guids.isEmpty()) {
+			String it = guids.poll();
+			
+			if (!observed.contains(it)) {
+				observed.add(it);
+				
+				Event event = get(it);
+				if (event != null) {
+					chain.add(event);
+					getReferencesTo(it).forEach(e -> guids.offer(e.guid()));
+				}
+			}
+		}
+		
+		return chain;
+	}
+	
+	/**
+	 * Gets the chain of events, ending with the given guid (inclusive).
+	 * 
+	 * Given the following relationships, this method returns the sequence (E1, E2, E3, E4):
+	 * <pre>
+	 *    E1 <- E2 <- E3 <- E4#guid
+	 * </pre>
+	 * 
+	 * In the unlikely scenario that events reference back to multiple events, creating a tree, the tree is flattened
+	 * and returned as a list.
+	 * @param guid
+	 * @return chain, if found; empty list otherwise
 	 */
 	public List<Event> getChainEndingWith(String guid) {
 		List<Event> chain = new ArrayList<>();
@@ -108,8 +203,9 @@ public class WorkingMemory {
 		Queue<String> guids = new LinkedList<>();
 		guids.offer(guid);
 		
+		// start from 'guid' and work backwards, building chain in reverse order
 		while (!guids.isEmpty()) {
-			String it = guids.remove();
+			String it = guids.poll();
 			
 			if (!observed.contains(it)) {
 				observed.add(it);

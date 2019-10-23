@@ -25,12 +25,13 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
  */
 public class StuckThoughtInterceptor implements InputInterceptor {
 	// including incoming state
-	private static final int THRESHOLD_TICK_COUNT = 2;
+	private static final int THRESHOLD_TICK_COUNT = 3;
 	
 	private Clock clock;
 	
 	// state
 	private Deque<ConsciousState> lastFewTicks = new LinkedList<>();
+	private Event lastStuckEvent = null;
 	
 	public StuckThoughtInterceptor(Clock clock) {
 		this.clock = clock;
@@ -54,15 +55,41 @@ public class StuckThoughtInterceptor implements InputInterceptor {
 				lastFewTicks.offer(state);
 				
 				if (state.getTop() != null && isLastFewUnchanged()) {
-					Event event = new StuckThoughtEvent(clock, state.getTop().guid());
-					event.setStrength(0.6);
-					return event;
+					// don't trigger when top event is a StuckThoughtEvent itself,
+					// or when it's the same stuck event as already flagged
+					if (!(state.getTop() instanceof StuckThoughtEvent)) {
+						Event event = new StuckThoughtEvent(clock, state.getTop().guid());
+						event.setStrength(0.6);
+						
+						if (canEmit(event)) {
+							lastStuckEvent = event;
+							return event;
+						}
+					}
 				}
 			}
 			return null;
 		} finally {
 			cleanup();
 		}
+	}
+	
+	/**
+	 * Emits the supplied event to the target collection, but only if it hasn't already been
+	 * previously emitted to working memory.
+	 * 
+	 * We do NOT want to allow re-emits once a previous StuckThoughtEvent is handled,
+	 * so we don't care whether the actual event in WM has been handled or not.
+	 * (Which we probably couldn't detect anyway, due to cloning, and we shouldn't even if we could)
+	 * @param target
+	 * @param event
+	 * @return true if emitted
+	 */
+	private boolean canEmit(Event event) {
+		boolean alreadyEmitted = lastStuckEvent != null && 
+				lastStuckEvent.references().equals(event.references());
+		
+		return !alreadyEmitted;
 	}
 	
 	private boolean isLastFewUnchanged() {
@@ -82,6 +109,7 @@ public class StuckThoughtInterceptor implements InputInterceptor {
 			if (count >= THRESHOLD_TICK_COUNT) {
 				return true;
 			}
+			prev = it;
 		}
 		
 		return false;
