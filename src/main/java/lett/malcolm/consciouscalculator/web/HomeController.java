@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,7 +58,7 @@ public class HomeController {
 	}
 
 	@PostMapping("/command")
-	String runCommand(@RequestParam("message") String message, WebRequest request) {
+	String runCommand(@RequestParam("message") String message, Model model) {
 		LOG.info("message: {}", message);
 		
 		// prepare to track logs
@@ -77,6 +78,8 @@ public class HomeController {
 			notifyingLogbackAppender.removeListener(logCaptures);
 		}
 		
+		model.addAttribute("hasResult", true);
+		model.addAttribute("events", logCaptures.events);
 		return "home";
 	}
 	

@@ -79,7 +79,9 @@ public class SpeakActionProcessor implements Processor, ActionAwareProcessor {
 				// TODO nasty hack for now
 				String t;
 				while ((t = outputStream.poll()) != null) {
-					LOG.info("Speach: {}", t);
+					LOG.info("========================================================", t);
+					LOG.info(t);
+					LOG.info("========================================================", t);
 				}
 				
 				// record as handled
