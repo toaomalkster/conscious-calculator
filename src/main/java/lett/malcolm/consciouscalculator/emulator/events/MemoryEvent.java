@@ -33,6 +33,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
  * Represents a remembering of a past or present thought.
  * This is the representation output from the Conscious Feedback loop, and fed into
  * Short Term Memory.
+ * 
+ * @author Malcolm Lett
  */
 // TODO when recalling 'concepts' from LTM, the existing structure here may not work
 public class MemoryEvent extends BaseEvent implements Event {

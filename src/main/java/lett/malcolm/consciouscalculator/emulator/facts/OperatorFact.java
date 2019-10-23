@@ -29,6 +29,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
 
 /**
  * Represents a mathematical operator, as used within an expression.
+ * 
+ * @author Malcolm Lett
  */
 // FIXME blindly assumes integers
 //TODO reference ExpressionTokenFact

@@ -48,6 +48,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
  * 
  * Known Event types acted on by the this processor:
  * - {@link PerceptEvent}
+ * 
+ * @author Malcolm Lett
  */
 // FIXME should this just update the existing event?
 //    - But need to record that there was a question.

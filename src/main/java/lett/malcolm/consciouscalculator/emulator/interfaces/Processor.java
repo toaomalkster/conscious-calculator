@@ -34,6 +34,8 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
  * Processors may become excited on:
  * - specific input events
  * - specific events within Working Memory.
+ * 
+ * @author Malcolm Lett
  */
 public interface Processor {
 	/**

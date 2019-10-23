@@ -27,6 +27,9 @@ import java.util.Set;
 
 import lett.malcolm.consciouscalculator.emulator.events.DataRules;
 
+/**
+ * @author Malcolm Lett
+ */
 public interface Event extends Cloneable {
 	
 	/**

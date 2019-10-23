@@ -39,6 +39,8 @@ import lett.malcolm.consciouscalculator.emulator.events.DataRules;
  * 
  * Immutable, and permitted by Data Rules.
  * Implements equals() and hashCode() according to the needs of {@link DataRules#isSame(Object, Object)}.
+ * 
+ * @author Malcolm Lett
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Percept {

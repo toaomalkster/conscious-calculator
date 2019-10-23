@@ -24,6 +24,9 @@ package lett.malcolm.consciouscalculator.emulator.interfaces;
 
 import java.util.List;
 
+/**
+ * @author Malcolm Lett
+ */
 public interface Fact {
 
 	/**

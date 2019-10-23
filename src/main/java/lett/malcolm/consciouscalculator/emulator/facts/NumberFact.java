@@ -27,6 +27,9 @@ import java.util.List;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
 
+/**
+ * @author Malcolm Lett
+ */
 // TODO reference ExpressionTokenFact
 public class NumberFact implements Fact {
 	public static final String GUID = NumberFact.class.getSimpleName();

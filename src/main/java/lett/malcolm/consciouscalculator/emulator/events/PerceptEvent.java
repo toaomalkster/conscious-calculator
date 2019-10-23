@@ -31,6 +31,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 
 /**
  * Represents interpreted data with attached meaning.
+ * 
+ * @author Malcolm Lett
  */
 @JsonSerialize
 public class PerceptEvent extends BaseEvent implements Event {

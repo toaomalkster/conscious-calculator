@@ -29,6 +29,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 /**
  * Identifies a moment when thought seems to have either completely stalled,
  * or is going around in loops.
+ * 
+ * @author Malcolm Lett
  */
 public class StuckThoughtEvent extends BaseEvent implements Event {
 	public StuckThoughtEvent(Clock clock, String latestEventGuid) {

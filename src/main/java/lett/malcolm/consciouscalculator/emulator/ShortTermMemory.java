@@ -33,6 +33,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 /**
  * Short-term memory, as the name suggests, only holds events for a short retention period.
  * The specifics are yet to be figured out, but the idea is to emulate the behaviour of a human short-term memory.
+ * 
+ * @author Malcolm Lett
  */
 public class ShortTermMemory {
 	private static final Logger log = LoggerFactory.getLogger(ShortTermMemory.class);

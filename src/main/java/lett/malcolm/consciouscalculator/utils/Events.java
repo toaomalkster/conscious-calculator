@@ -26,6 +26,9 @@ import java.util.function.BinaryOperator;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
+/**
+ * @author Malcolm Lett
+ */
 public abstract class Events {
 	
 	private Events() { }

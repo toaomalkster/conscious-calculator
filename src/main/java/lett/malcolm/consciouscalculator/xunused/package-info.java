@@ -1,5 +1,7 @@
 /**
  * Holding pattern for classes I've created, but then not used.
+ * 
+ * @author Malcolm Lett
  */
 package lett.malcolm.consciouscalculator.xunused;
 /*-

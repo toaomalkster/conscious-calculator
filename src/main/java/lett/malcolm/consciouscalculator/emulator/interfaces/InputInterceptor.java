@@ -34,6 +34,8 @@ import java.util.Queue;
  * Interceptors are allowed to hold state. This is especially important as intereptors need to detect
  * events (such as "changes"), from input streams. Changes cannot be detected without an idea of what came
  * before.
+ * 
+ * @author Malcolm Lett
  */
 public interface InputInterceptor {
 	/**

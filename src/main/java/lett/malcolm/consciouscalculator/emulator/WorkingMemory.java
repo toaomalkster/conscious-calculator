@@ -39,6 +39,9 @@ import org.slf4j.LoggerFactory;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
+/**
+ * @author Malcolm Lett
+ */
 public class WorkingMemory {
 	private static final Logger log = LoggerFactory.getLogger(WorkingMemory.class);
 

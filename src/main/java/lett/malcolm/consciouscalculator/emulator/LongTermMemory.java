@@ -41,6 +41,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
  * The Processors represent the learned and optimised skill, without need to refer to LTM.
  * Whereas LTM holds the original concepts, which require using more manual analytic and sequential processing
  * to use.
+ * 
+ * @author Malcolm Lett
  */
 public class LongTermMemory {
 	private static final Logger log = LoggerFactory.getLogger(LongTermMemory.class);

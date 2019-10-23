@@ -53,6 +53,8 @@ import lett.malcolm.consciouscalculator.utils.Events;
  * Known Event types acted on by the this processor:
  * - {@link StuckThoughtEvent}
  * - any unhandled event
+ * 
+ * @author Malcolm Lett
  */
 public class FindMatchingConceptProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(FindMatchingConceptProcessor.class);

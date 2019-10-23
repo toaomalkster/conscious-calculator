@@ -22,6 +22,9 @@ package lett.malcolm.consciouscalculator.emulator.interfaces;
  * #L%
  */
 
+/**
+ * @author Malcolm Lett
+ */
 public enum InputDesignator {
 	/**
 	 * Textual input from user.

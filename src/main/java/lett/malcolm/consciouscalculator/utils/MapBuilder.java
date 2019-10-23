@@ -27,6 +27,8 @@ import java.util.Map;
 
 /**
  * Builder for Map<String,Object> maps.
+ * 
+ * @author Malcolm Lett
  */
 public class MapBuilder<K, V> {
 	private Map<K, V> map = new HashMap<>();

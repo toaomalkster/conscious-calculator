@@ -16,6 +16,8 @@
  * 
  * Thus rapid evaluation processors may access internal classes directly,
  * without going via instances of the fact.
+ * 
+ * @author Malcolm Lett
  */
 package lett.malcolm.consciouscalculator.emulator.facts;
 

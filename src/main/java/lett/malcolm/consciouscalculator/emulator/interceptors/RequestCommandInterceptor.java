@@ -32,6 +32,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 
 /**
  * Recognises that a request has been issued via the command input stream.
+ * 
+ * @author Malcolm Lett
  */
 public class RequestCommandInterceptor implements InputInterceptor {
 	private Clock clock;

@@ -36,6 +36,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 /**
  * Special purpose interceptor that detects each new event coming from conscious feedback,
  * and records them into Short Term Memory.
+ * 
+ * @author Malcolm Lett
  */
 // TODO consider changing to store clone of raw event type in STM, and only convert to MemoryEvent upon read into WM.
 /*

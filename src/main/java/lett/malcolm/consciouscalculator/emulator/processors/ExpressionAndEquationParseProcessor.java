@@ -54,6 +54,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
  * 
  * Known Event types acted on by the this processor:
  * - {@link TextRequestEvent}
+ * 
+ * @author Malcolm Lett
  */
 // TODO should it avoid emitting unless a GoingNowhereEvent is present?
 public class ExpressionAndEquationParseProcessor implements Processor {
