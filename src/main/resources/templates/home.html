@@ -4,7 +4,13 @@
 </head>
 <body>
 <div class="container">
-	Hello
+	<form action="#" th:action="@{/command}" method="post">
+		<fieldset>
+			<legend>Request</legend>
+			Type your message:<br/>
+			<input name="message" placeholder="eg: 3 + 8" size="50"></input>
+		</fieldset>
+	</form>
 </div>
 </body>
 </html>

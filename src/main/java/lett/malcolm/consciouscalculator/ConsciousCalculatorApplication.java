@@ -1,5 +1,4 @@
 package lett.malcolm.consciouscalculator;
-
 /*-
  * #%L
  * Conscious Calculator
@@ -22,6 +21,8 @@ package lett.malcolm.consciouscalculator;
  * #L%
  */
 
+
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -29,11 +30,24 @@ import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import lett.malcolm.consciouscalculator.logging.CapturingLogbackAppender;
+
 @SpringBootApplication
 public class ConsciousCalculatorApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ConsciousCalculatorApplication.class, args);
+		
+		// capture logs
+		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+		CapturingLogbackAppender appender = new CapturingLogbackAppender();
+		appender.setContext(lc);
+		appender.start();
+
+		Logger rootLogger = lc.getLogger(Logger.ROOT_LOGGER_NAME);
+		rootLogger.addAppender(appender);
 	}
 
     @Bean

@@ -7,13 +7,18 @@
       </Pattern>
     </layout>
   </appender>
+  
+  <!-- <appender name="InMemory" class="lett.malcolm.consciouscalculator.logging.CapturingLogbackAppender">
+  </appender>-->
 
   <root level="info">
     <appender-ref ref="Console" />
+    <!--<appender-ref ref="InMemory"/>-->
   </root>
 
   <!-- Log everything at the TRACE level -->
-  <logger name="com.example" level="trace" additivity="false">
+  <logger name="com.example" level="trace" >
     <appender-ref ref="Console" />
+    <!-- <appender-ref ref="InMemory"/>-->
   </logger>
 </configuration>

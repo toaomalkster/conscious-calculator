@@ -1,5 +1,10 @@
 package lett.malcolm.consciouscalculator.web;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*-
  * #%L
  * Conscious Calculator
@@ -23,18 +28,42 @@ package lett.malcolm.consciouscalculator.web;
  */
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.WebRequest;
+
+import lett.malcolm.consciouscalculator.emulator.Emulator;
+import lett.malcolm.consciouscalculator.logging.CapturingLogbackAppender;
 
 /**
  * Welcome-page controller
  */
 @Controller
 public class HomeController {
+	private static final Logger LOG = LoggerFactory.getLogger(HomeController.class);
 	
 	@RequestMapping("/")
 	String index(WebRequest request) {
 		return "home";
 	}
-	
+
+	@PostMapping("/command")
+	String runCommand(@RequestParam("message") String message, WebRequest request) {
+		LOG.info("message: {}", message);
+		
+		// prepare to track logs
+		CapturingLogbackAppender.clear();
+		
+		// Start up Emulator
+		Emulator emulator = new Emulator();
+		emulator.sendCommand(message);
+		
+		// grab logs
+		List<String> events = CapturingLogbackAppender.getLatestEvents();
+		System.out.println("Found events: " + events.size());
+		events.forEach((it) -> System.out.println(">>> " + it));
+		
+		return "home";
+	}
 }
