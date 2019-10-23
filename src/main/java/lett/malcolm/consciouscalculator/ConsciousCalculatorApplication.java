@@ -24,6 +24,10 @@ package lett.malcolm.consciouscalculator;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.templateresolver.ITemplateResolver;
 
 @SpringBootApplication
 public class ConsciousCalculatorApplication {
@@ -32,4 +36,17 @@ public class ConsciousCalculatorApplication {
 		SpringApplication.run(ConsciousCalculatorApplication.class, args);
 	}
 
+    @Bean
+    public SpringTemplateEngine templateEngine(ITemplateResolver templateResolver) {
+        SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+        
+        // Java 8 time support (#temporals object)
+        // https://github.com/thymeleaf/thymeleaf-extras-java8time
+        templateEngine.addDialect(new Java8TimeDialect());
+        
+        // https://github.com/thymeleaf/thymeleaf-extras-springsecurity
+        templateEngine.addDialect(new org.thymeleaf.extras.springsecurity5.dialect.SpringSecurityDialect());
+        return templateEngine;
+    }
 }
