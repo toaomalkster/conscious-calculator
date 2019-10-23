@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" >
+<head>
+</head>
+<body>
+<div class="container">
+	<a th:href="@{/}">Home</a>
+	<br/>
+
+	<form action="#" th:action="@{/command}" method="post">
+		<fieldset>
+			<legend>Request</legend>
+			Type your message:<br/>
+			<input name="message" placeholder="eg: 3 + 8" size="50"></input>
+		</fieldset>
+	</form>
+	
+	<div th:if="${hasResult}">
+		<h2>Result</h2>
+		<code th:each="line : ${events}">
+			<span style="display:block;" th:text="${line}"></span>
+		</code>
+	</div>
+</div>
+</body>
+</html>

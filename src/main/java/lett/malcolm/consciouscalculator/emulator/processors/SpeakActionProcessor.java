@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import lett.malcolm.consciouscalculator.emulator.AttentionAttenuator;
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.ActionEvent;
@@ -48,6 +51,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
  * @author Malcolm Lett
  */
 public class SpeakActionProcessor implements Processor, ActionAwareProcessor {
+	private static final Logger LOG = LoggerFactory.getLogger(SpeakActionProcessor.class);
+	
 	private Clock clock;
 	private Queue<String> outputStream;
 	
@@ -76,7 +81,9 @@ public class SpeakActionProcessor implements Processor, ActionAwareProcessor {
 				// TODO nasty hack for now
 				String t;
 				while ((t = outputStream.poll()) != null) {
-					System.out.println(t);
+					LOG.info("========================================================", t);
+					LOG.info(t);
+					LOG.info("========================================================", t);
 				}
 				
 				// record as handled
