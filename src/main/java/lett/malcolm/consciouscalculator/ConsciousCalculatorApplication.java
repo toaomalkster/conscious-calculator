@@ -21,7 +21,6 @@ package lett.malcolm.consciouscalculator;
  * #L%
  */
 
-
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,22 +31,37 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import lett.malcolm.consciouscalculator.logging.CapturingLogbackAppender;
+import lett.malcolm.consciouscalculator.logging.NotifyingLogbackAppender;
 
+/**
+ * @author Malcolm Lett
+ */
 @SpringBootApplication
 public class ConsciousCalculatorApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ConsciousCalculatorApplication.class, args);
-		
+	}
+	
+	/**
+	 * Also installs the appender into logback.
+	 * We don't use logback-spring.xml to set this up, because logback may use a different class-loader
+	 * than the spring-app does.
+	 * (And that's exactly what happens when dev-tools are enabled)
+	 * @return
+	 */
+	@Bean
+	public NotifyingLogbackAppender notifyingLogbackAppender() {
 		// capture logs
 		LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-		CapturingLogbackAppender appender = new CapturingLogbackAppender();
+		NotifyingLogbackAppender appender = new NotifyingLogbackAppender();
 		appender.setContext(lc);
 		appender.start();
 
 		Logger rootLogger = lc.getLogger(Logger.ROOT_LOGGER_NAME);
 		rootLogger.addAppender(appender);
+		
+		return appender;
 	}
 
     @Bean
