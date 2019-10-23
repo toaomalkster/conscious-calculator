@@ -167,9 +167,9 @@ public class DataRulesTests {
 
 	@Test
 	public void toStringsCollectionAndComplexTypes() {
-		assertThat(DataRules.stringOf(listOf("some", "text")), is("[\"some\",\"text\"]"));
+		assertThat(DataRules.stringOf(listOf("some", "text")), is("[some,text]"));
 		assertThat(DataRules.stringOf(listOf(3, 5, 9)), is("[3,5,9]"));
-		assertThat(DataRules.stringOf(mapOf("A", 3, "B", true, "C", "text")), is("{\"A\":3,\"B\":true,\"C\":\"text\"}"));
+		assertThat(DataRules.stringOf(mapOf("A", 3, "B", true, "C", "text")), is("{A:3,B:true,C:text}"));
 	}
 	
 	private static List<Object> listOf(Object... items) {
