@@ -24,6 +24,37 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<!--
+				Checks the headers each build but doesn't update automatically in order to avoid messing up git commits.
+				To update headers, run: mvn license:update-file-header 
+				-->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<inceptionYear>2019</inceptionYear>
+					<organizationName>Malcolm Lett</organizationName>
+					<projectName>Conscious Calculator</projectName>
+					<licenseName>gpl_v3</licenseName>
+					<addSvnKeyWords>false</addSvnKeyWords>
+					<verbose>false</verbose>
+					<roots>
+						<root>src/main/java</root>
+						<root>src/test/java</root>
+					</roots>
+					<failOnMissingHeader>true</failOnMissingHeader>
+					<failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check-file-header</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
