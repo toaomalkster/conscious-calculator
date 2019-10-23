@@ -3,6 +3,7 @@ package lett.malcolm.consciouscalculator.emulator.interfaces;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,7 +14,9 @@ import lett.malcolm.consciouscalculator.emulator.events.DataRules;
 
 /**
  * Represents interpreted data with attached meaning.
+ * 
  * Immutable, and permitted by Data Rules.
+ * Implements equals() and hashCode() according to the needs of {@link DataRules#isSame(Object, Object)}.
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class Percept {
@@ -143,4 +146,40 @@ public class Percept {
 	public Object data() {
 		return data;
 	}
+
+	/**
+	 * Hash-code, meeting expectations of {@link #equals(Object)} implementation.
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((data == null) ? 0 : data.hashCode());
+		result = prime * result + ((guid == null) ? 0 : guid.hashCode());
+		result = prime * result + ((references == null) ? 0 : references.hashCode());
+		return result;
+	}
+
+	/**
+	 * Exact equality.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		
+		Percept other = (Percept) obj;
+		return Objects.equals(this.data, other.data) &&
+				Objects.equals(this.guid, other.guid) &&
+				Objects.equals(this.references, other.references);
+	}
+	
+	
 }

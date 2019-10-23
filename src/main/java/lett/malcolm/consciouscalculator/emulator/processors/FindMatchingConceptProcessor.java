@@ -4,8 +4,9 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,7 @@ import lett.malcolm.consciouscalculator.utils.Events;
  * - any unhandled event
  */
 public class FindMatchingConceptProcessor implements Processor {
-	private static final Logger LOG = LoggerFactory.getLogger(ExpressionEvaluationProcessor.class);
+	private static final Logger LOG = LoggerFactory.getLogger(FindMatchingConceptProcessor.class);
 
 	private Clock clock;
 	
@@ -65,6 +66,7 @@ public class FindMatchingConceptProcessor implements Processor {
 				// (fluent API: emit(new Event(), ifNoUnprocessedEquivalentsPresent(), ...??)
 				if (target != null && concept == null) {
 					Event event = new MemorySearchRequestEvent(clock, target.data());
+					event.setStrength(target.strength() + 0.01);
 					event.references().add(target.guid());
 					
 					if (!emitTo(result, event, memory)) {
@@ -86,8 +88,16 @@ public class FindMatchingConceptProcessor implements Processor {
 				!memoryItem.tags().contains(EventTag.HANDLED);
 	}
 
+	/**
+	 * Accepts only events that we have a chance to help in.
+	 * Currently can only help on events that have a Percept.
+	 * @param memoryItem
+	 * @return
+	 */
 	private boolean acceptsTargetEvent(Event memoryItem) {
-		return !memoryItem.tags().contains(EventTag.COMPLETED) &&
+		return !(memoryItem instanceof MemorySearchRequestEvent) &&
+				hasPercept(memoryItem) &&
+				!memoryItem.tags().contains(EventTag.COMPLETED) &&
 				!memoryItem.tags().contains(EventTag.HANDLED);
 	}
 	
@@ -118,21 +128,47 @@ public class FindMatchingConceptProcessor implements Processor {
 	 * Selects one target event from those referenced by triggerEvent, and
 	 * only from within WorkingMemory.
 	 * Also checks against {@link #acceptsTargetEvent(Event)}.
+	 * 
+	 * Copes with the following linkages:
+	 * <pre>
+	 *    Original                    (some sort of original event that caused the processing)
+	 *       ^
+	 *       |
+	 *    Target <----- StuckThought  (identified stuck thought at Target, but some derived event may be working for it)
+	 *       ^
+	 *       |
+	 *    Derived1
+	 *       ^
+	 *       |
+	 *    Derived2                    (it may be this one that we need to provide help on)
+	 * </pre>
 	 * @param triggerEvent
 	 * @param memory
 	 * @return null if none found
 	 */
 	private Event findTargetMemoryItem(StuckThoughtEvent triggerEvent, WorkingMemory memory) {
-		List<Event> found = new ArrayList<>();
-		for (String ref: triggerEvent.references()) {
-			Event event = memory.get(ref);
-			if (event != null && acceptsTargetEvent(event)) {
-				found.add(event);
-			}
+		// find targeted event
+		// (don't do too much filtering at this point, as the direct target may be flagged as HANDLED already)
+		List<Event> directTargets = triggerEvent.references().stream()
+				.map(r -> memory.get(r))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+		
+		// now find all related events
+		List<Event> allTargets = new ArrayList<>();
+		for (Event directTarget: directTargets) {
+			allTargets.addAll(
+					memory.getChainStartingWith(directTarget).stream()
+					.collect(Collectors.toList()));
 		}
 		
-		// return event with highest strength
-		return found.stream().reduce(Events.strongest()).orElse(null);
+		// finally, filter on just events we have a chance to help in,
+		// and pick single strongest event
+		// (currently can only help on events that have a Percept)
+		return allTargets.stream()
+				.filter(this::acceptsTargetEvent)
+				.reduce(Events.strongest())
+				.orElse(null);
 	}
 
 	/**
@@ -146,20 +182,20 @@ public class FindMatchingConceptProcessor implements Processor {
 		return memory.all().stream()
 			.filter(e -> e instanceof MemoryEvent)
 			.filter(e -> e.references().contains(targetEvent.guid()))
-			.filter(hasPercept())
+			.filter(this::hasPercept)
 			.reduce(Events.strongest())
 			.map(getPercept())
 			.orElse(null);
 	}
 	
-	private Predicate<Event> hasPercept() {
-		return e -> {
-			MemoryEvent mem = (MemoryEvent) e;
-			if (e.data() instanceof Percept || mem.eventData() instanceof Percept) {
-				return true;
-			};
-			return false;
-		};
+	private boolean hasPercept(Event e) {
+		if (e.data() instanceof Percept) {
+			return true;
+		}
+		else if (e instanceof MemoryEvent && ((MemoryEvent) e).eventData() instanceof Percept) {
+			return true;
+		}
+		return false;
 	}
 	
 	private Function<Event, Percept> getPercept() {
