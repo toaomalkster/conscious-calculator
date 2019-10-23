@@ -1,5 +1,27 @@
 package lett.malcolm.consciouscalculator.emulator.events;
 
+/*-
+ * #%L
+ * Conscious Calculator
+ * %%
+ * Copyright (C) 2019 Malcolm Lett
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import static lett.malcolm.consciouscalculator.testutils.AssertThrows.*;
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -167,9 +189,9 @@ public class DataRulesTests {
 
 	@Test
 	public void toStringsCollectionAndComplexTypes() {
-		assertThat(DataRules.stringOf(listOf("some", "text")), is("[\"some\",\"text\"]"));
+		assertThat(DataRules.stringOf(listOf("some", "text")), is("[some,text]"));
 		assertThat(DataRules.stringOf(listOf(3, 5, 9)), is("[3,5,9]"));
-		assertThat(DataRules.stringOf(mapOf("A", 3, "B", true, "C", "text")), is("{\"A\":3,\"B\":true,\"C\":\"text\"}"));
+		assertThat(DataRules.stringOf(mapOf("A", 3, "B", true, "C", "text")), is("{A:3,B:true,C:text}"));
 	}
 	
 	private static List<Object> listOf(Object... items) {
