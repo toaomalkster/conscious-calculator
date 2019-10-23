@@ -34,6 +34,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
  * - may be one or two arguments, plus an operator.
  * 
  * Can evaluate expressions, if all values are known are supplied.
+ * 
+ * @author Malcolm Lett
  */
 public class ExpressionFact implements Fact {
 	public static final String GUID = ExpressionFact.class.getSimpleName();

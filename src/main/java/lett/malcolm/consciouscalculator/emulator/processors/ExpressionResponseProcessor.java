@@ -45,6 +45,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
  * 
  * Known Event types acted on by the this processor:
  * - {@link PerceptEvent}
+ * 
+ * @author Malcolm Lett
  */
 public class ExpressionResponseProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(ExpressionResponseProcessor.class);

@@ -35,6 +35,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
  * - RHS may be only a single value (known or unknown)
  * 
  * Can evaluate and test the equation with supplied values for unknowns.
+ * 
+ * @author Malcolm Lett
  */
 public class EquationFact implements Fact {
 	public static final String GUID = EquationFact.class.getSimpleName();

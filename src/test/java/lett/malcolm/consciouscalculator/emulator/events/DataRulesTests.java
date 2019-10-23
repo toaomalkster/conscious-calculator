@@ -38,6 +38,9 @@ import org.junit.Test;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 
+/**
+ * @author Malcolm Lett
+ */
 public class DataRulesTests {
 	@Test
 	public void acceptsValidTypes() {

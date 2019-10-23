@@ -44,6 +44,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
  * If it looks like a cycle may be happening, but it isn't certain of that,
  * a {@code DejaVuEvent} will be emitted, for a processor to pick up and examine more closely
  * along with Short Term Memory data to confirm.
+ * 
+ * @author Malcolm Lett
  */
 public class StuckThoughtInterceptor implements InputInterceptor {
 	// including incoming state

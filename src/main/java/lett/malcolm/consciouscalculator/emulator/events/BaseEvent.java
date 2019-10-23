@@ -35,6 +35,8 @@ import lett.malcolm.consciouscalculator.utils.QuantityUtils;
 
 /**
  * TODO figure out how to make most parts of Event immutable.
+ * 
+ * @author Malcolm Lett
  */
 abstract class BaseEvent implements Event {
 	private String guid;

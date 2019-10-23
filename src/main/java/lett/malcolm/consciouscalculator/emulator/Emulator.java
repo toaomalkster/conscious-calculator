@@ -61,6 +61,8 @@ import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor
  * It also has only one external output: it generates text based messages that can be printed to the console, for example.
  * 
  * TODO make the Emulator run in its own thread, and carefully synchronize access on the public methods.
+ * 
+ * @author Malcolm Lett
  */
 public class Emulator {
 	public static final int DEFAULT_WORKING_MEMORY_MAX_SIZE = 100;

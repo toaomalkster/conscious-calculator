@@ -24,6 +24,9 @@ package lett.malcolm.consciouscalculator.utils;
 
 import java.math.BigDecimal;
 
+/**
+ * @author Malcolm Lett
+ */
 public class QuantityUtils {
 	public static String toShortMillisString(long millis) {
 		if (millis < 1000) {

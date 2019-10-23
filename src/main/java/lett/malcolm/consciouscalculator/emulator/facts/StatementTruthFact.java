@@ -30,6 +30,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
 /**
  * Represents whether a statement is true or not.
  * The statement may be a mathematical equation that has been tested, but doesn't have to be.
+ * 
+ * @author Malcolm Lett
  */
 public class StatementTruthFact implements Fact {
 	public static final String GUID = StatementTruthFact.class.getSimpleName();

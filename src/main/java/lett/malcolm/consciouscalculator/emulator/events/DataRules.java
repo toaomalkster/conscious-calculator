@@ -73,6 +73,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
  * <li> Set - marshals to the same thing as a List
  * <li> Enum - loses the type when marshaling, so unmarshals to a string.
  * </ul> 
+ * 
+ * @author Malcolm Lett
  */
 // TODO should it clean-up collection sub-types to basic List/Map (could possibly convert any Collection to List at same time)
 public class DataRules {

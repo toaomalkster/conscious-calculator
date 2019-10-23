@@ -26,7 +26,11 @@ package lett.malcolm.consciouscalculator.xunused;
  * Holds the guid reference of another event.
  * 
  * Treated as a simple-type by Data Rules.
+ * 
+ * @author Malcolm Lett
+ * @deprecated currently not used
  */
+@Deprecated
 public class EventRef {
 	private final String guid;
 

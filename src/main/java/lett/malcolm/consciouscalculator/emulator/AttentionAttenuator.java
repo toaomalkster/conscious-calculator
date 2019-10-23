@@ -31,6 +31,9 @@ import lett.malcolm.consciouscalculator.emulator.events.ActionEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 
+/**
+ * @author Malcolm Lett
+ */
 public class AttentionAttenuator {
 	private Queue<? extends Object> commandStream;
 	private Queue<? extends Object> consciousFeedbackStream;

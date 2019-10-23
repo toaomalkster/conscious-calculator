@@ -30,6 +30,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
 
 /**
  * Represents the equality/inequality operator within a mathematical equation.
+ * 
+ * @author Malcolm Lett
  */
 // TODO reference ExpressionTokenFact?
 public class EquationOperatorFact implements Fact {

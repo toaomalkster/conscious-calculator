@@ -44,6 +44,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
  * 
  * TODO move this into some other kind of special-purpose 'action' mechanism.
  * Remember: for humans, actions happen 'mysteriously' once we've decided we want them to happen.
+ * 
+ * @author Malcolm Lett
  */
 public class SpeakActionProcessor implements Processor, ActionAwareProcessor {
 	private Clock clock;

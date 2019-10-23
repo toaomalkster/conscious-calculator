@@ -26,6 +26,9 @@ import java.util.Queue;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
+/**
+ * @author Malcolm Lett
+ */
 public class ConsciousFeedbacker {
 	private WorkingMemory workingMemory;
 

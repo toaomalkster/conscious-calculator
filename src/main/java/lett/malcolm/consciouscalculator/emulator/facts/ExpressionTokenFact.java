@@ -32,6 +32,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
  * 
  * Usually expression tokens are parsed to more concrete forms, but sometimes they need to represent more
  * of an unknown.
+ * 
+ * @author Malcolm Lett
  */
 public class ExpressionTokenFact implements Fact {
 	public static final String GUID = ExpressionTokenFact.class.getSimpleName();

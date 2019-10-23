@@ -22,6 +22,9 @@ package lett.malcolm.consciouscalculator.emulator.lowlevel;
  * #L%
  */
 
+/**
+ * @author Malcolm Lett
+ */
 public class Trigger {
 
 }

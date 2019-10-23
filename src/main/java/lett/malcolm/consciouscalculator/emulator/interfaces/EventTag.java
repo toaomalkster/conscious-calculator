@@ -22,6 +22,9 @@ package lett.malcolm.consciouscalculator.emulator.interfaces;
  * #L%
  */
 
+/**
+ * @author Malcolm Lett
+ */
 public enum EventTag {
 	/**
 	 * The event was triggered by a request, probably from the COMMAND input stream.

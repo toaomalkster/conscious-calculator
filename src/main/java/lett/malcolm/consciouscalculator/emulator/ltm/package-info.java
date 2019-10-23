@@ -9,6 +9,8 @@
  * 
  * Pre-programmed concepts and facts are represented in a mixture of generic LTM representation,
  * and hard-coded for practical simplicity.
+ * 
+ * @author Malcolm Lett
  */
 package lett.malcolm.consciouscalculator.emulator.ltm;
 

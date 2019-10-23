@@ -26,6 +26,7 @@ import lett.malcolm.consciouscalculator.emulator.events.DataRules;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 /**
+ * @author Malcolm Lett
  * @deprecated currently unused
  */
 @Deprecated

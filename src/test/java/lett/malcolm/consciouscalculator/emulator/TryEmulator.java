@@ -24,6 +24,9 @@ package lett.malcolm.consciouscalculator.emulator;
 
 import org.junit.Test;
 
+/**
+ * @author Malcolm Lett
+ */
 public class TryEmulator {
 	@Test
 	public void evaluate3Plus5() {

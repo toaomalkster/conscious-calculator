@@ -28,6 +28,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 /**
  * Internal request to STM and LTM for hits on memory, by associativity.
+ * 
+ * @author Malcolm Lett
  */
 public class MemorySearchRequestEvent extends BaseEvent implements Event {
 	public MemorySearchRequestEvent(Clock clock, Object referenceData) {
