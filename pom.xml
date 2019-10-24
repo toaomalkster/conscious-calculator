@@ -45,6 +45,8 @@
 					</roots>
 					<failOnMissingHeader>true</failOnMissingHeader>
 					<failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+					<emptyLineAfterHeader>false</emptyLineAfterHeader>
 				</configuration>
 				<executions>
 					<execution>
