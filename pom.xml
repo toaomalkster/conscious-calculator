@@ -25,35 +25,34 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<!--
-				Checks the headers each build but doesn't update automatically in order to avoid messing up git commits.
-				To update headers, run: mvn license:update-file-header 
+				<!-- Checks the headers each build but doesn't update automatically in order to avoid messing up git commits.
+				To update, you must follow this order:
+				 1. mvn license:remove
+				 2. update pom
+				 3. mvn license:format
 				-->
-				<groupId>org.codehaus.mojo</groupId>
+				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>2.0.0</version>
+				<version>3.0</version>
 				<configuration>
-					<inceptionYear>2019</inceptionYear>
-					<organizationName>Malcolm Lett</organizationName>
-					<projectName>Conscious Calculator</projectName>
-					<licenseName>gpl_v3</licenseName>
-					<addSvnKeyWords>false</addSvnKeyWords>
-					<verbose>false</verbose>
-					<roots>
-						<root>src/main/java</root>
-						<root>src/test/java</root>
-					</roots>
-					<failOnMissingHeader>true</failOnMissingHeader>
-					<failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-					<addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-					<emptyLineAfterHeader>false</emptyLineAfterHeader>
+					<header>com/mycila/maven/plugin/license/templates/GPL-3.txt</header>
+					<properties>
+						<owner>Malcolm Lett</owner>
+						<email>malcolm.lett at gmail.com</email>
+						<project.inceptionYear>2019</project.inceptionYear>
+						<project.name>Conscious Calculator</project.name>
+						<project.description>Emulation of a conscious calculator.</project.description>
+					</properties>
+					<includes>
+						<include>src/main/java/**</include>
+						<include>src/test/java/**</include>
+					</includes>
 				</configuration>
 				<executions>
 					<execution>
 						<goals>
-							<goal>check-file-header</goal>
+							<goal>check</goal>
 						</goals>
-						<phase>verify</phase>
 					</execution>
 				</executions>
 			</plugin>
