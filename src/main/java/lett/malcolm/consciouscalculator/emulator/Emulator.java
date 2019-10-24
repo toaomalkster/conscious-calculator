@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator;
 
-
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,7 +93,7 @@ public class Emulator {
 		this.clock = Clock.systemDefaultZone();
 		this.workingMemory = new WorkingMemory(DEFAULT_WORKING_MEMORY_MAX_SIZE);
 		this.shortTermMemory = new ShortTermMemory(DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE);
-		this.longTermMemory = new LongTermMemory(DEFAULT_LONG_TERM_MEMORY_MAX_SIZE);
+		this.longTermMemory = new LongTermMemory(clock, DEFAULT_LONG_TERM_MEMORY_MAX_SIZE);
 		this.attentionAttenuator = new AttentionAttenuator(commandStream,
 				consciousFeedbackStream, workingMemory);
 		this.consciousFeedbacker = new ConsciousFeedbacker(workingMemory);

@@ -44,19 +44,46 @@ public class Percept {
 	private final Set<String> references;
 	private final Object data;
 
+	/**
+	 * Construct new instance with custom identifier.
+	 * 
+	 * If this represents the raw concept itself, then {@code guid} is the unique concept identifier;
+	 * {@code references} is one or more underlying or related concepts; and
+	 * {@code data} is probably {@code null}.
+	 * 
+	 * In some cases, a percept represents a learned 'instance'.
+	 * eg: maybe, that 'v' is always the number 5. There it can store a reference to the NumberFact percept,
+	 * and data = 5.
+	 * 
+	 * @param guid identifier of this percept
+	 * @param references guids of underlying or related concepts
+	 * @param data
+	 */
 	@JsonCreator
 	public Percept(String guid, Set<String> references, Object data) {
+		if (references == null) {
+			references = new HashSet<>();
+		}
+		
 		this.guid = guid;
 		this.references = Collections.unmodifiableSet(references);
 		this.data = data;
 	}
 
+	/**
+	 * Construct new instance referencing a single source concept or fact, by guid.
+	 * 
+	 * If this represents an 'instance' of a concept 'class', then {@code data} should
+	 * hold the instance value, and {@code reference} should refer to the GUID of the original
+	 * concept 'class'. eg: {@code NumberFact.GUID}.
+	 * 
+	 * @param reference guid reference of underlying concept or fact
+	 * @param data
+	 */
 	public Percept(String reference, Object data) {
-		this.guid = UUID.randomUUID().toString();
-		this.references = Collections.singleton(reference);
-		this.data = data;
+		this(UUID.randomUUID().toString(), Collections.singleton(reference), data);
 	}
-	
+
 	/**
 	 * Deep clone.
 	 */

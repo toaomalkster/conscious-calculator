@@ -17,10 +17,21 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interfaces;
 
-
 import java.util.List;
 
 /**
+ * Haven't totally decided on scope or purpose of this yet.
+ * 
+ * I think this represents only pre-programmed facts, as a quick way of pulling together
+ * both a unique reference (guid), and other meta-data such as allowed data types
+ * and it's "name" when spoken about.
+ * In Long Term Memory, this is all stored across multiple Percepts, whereas this holds that together
+ * in a convenient place for use within pre-programmed processors.
+ * 
+ * It's possible this could be used for learned facts too, as needed by learned processors.
+ * 
+ * The "name" of the fact is the class name, without the "Fact" suffix.
+ * 
  * @author Malcolm Lett
  */
 public interface Fact {
