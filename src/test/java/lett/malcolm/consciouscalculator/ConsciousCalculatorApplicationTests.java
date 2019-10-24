@@ -1,5 +1,3 @@
-package lett.malcolm.consciouscalculator;
-
 /*-
  * #%L
  * Conscious Calculator
@@ -21,6 +19,8 @@ package lett.malcolm.consciouscalculator;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+package lett.malcolm.consciouscalculator;
+
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

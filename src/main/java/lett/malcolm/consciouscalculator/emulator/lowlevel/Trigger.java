@@ -1,5 +1,3 @@
-package lett.malcolm.consciouscalculator.emulator.lowlevel;
-
 /*-
  * #%L
  * Conscious Calculator
@@ -21,6 +19,8 @@ package lett.malcolm.consciouscalculator.emulator.lowlevel;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+package lett.malcolm.consciouscalculator.emulator.lowlevel;
+
 
 /**
  * @author Malcolm Lett

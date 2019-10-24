@@ -1,5 +1,3 @@
-package lett.malcolm.consciouscalculator.emulator.interceptors;
-
 /*-
  * #%L
  * Conscious Calculator
@@ -21,6 +19,8 @@ package lett.malcolm.consciouscalculator.emulator.interceptors;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+package lett.malcolm.consciouscalculator.emulator.interceptors;
+
 
 import java.time.Clock;
 import java.util.Deque;

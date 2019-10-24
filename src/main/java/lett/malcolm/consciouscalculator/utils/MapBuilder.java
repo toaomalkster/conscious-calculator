@@ -1,5 +1,3 @@
-package lett.malcolm.consciouscalculator.utils;
-
 /*-
  * #%L
  * Conscious Calculator
@@ -21,6 +19,8 @@ package lett.malcolm.consciouscalculator.utils;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+package lett.malcolm.consciouscalculator.utils;
+
 
 import java.util.HashMap;
 import java.util.Map;

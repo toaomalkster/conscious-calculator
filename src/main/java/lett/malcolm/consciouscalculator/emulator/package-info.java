@@ -1,6 +1,3 @@
-/**
- *
- */
 package lett.malcolm.consciouscalculator.emulator;
 /*-
  * #%L

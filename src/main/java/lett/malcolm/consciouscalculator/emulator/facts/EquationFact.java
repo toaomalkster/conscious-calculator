@@ -1,5 +1,3 @@
-package lett.malcolm.consciouscalculator.emulator.facts;
-
 /*-
  * #%L
  * Conscious Calculator
@@ -21,6 +19,8 @@ package lett.malcolm.consciouscalculator.emulator.facts;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+package lett.malcolm.consciouscalculator.emulator.facts;
+
 
 import java.util.Collections;
 import java.util.List;

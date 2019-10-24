@@ -1,5 +1,3 @@
-package lett.malcolm.consciouscalculator.emulator.events;
-
 /*-
  * #%L
  * Conscious Calculator
@@ -21,6 +19,8 @@ package lett.malcolm.consciouscalculator.emulator.events;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+package lett.malcolm.consciouscalculator.emulator.events;
+
 
 import java.time.Clock;
 
