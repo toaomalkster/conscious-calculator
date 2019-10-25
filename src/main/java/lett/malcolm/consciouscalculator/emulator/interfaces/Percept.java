@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lett.malcolm.consciouscalculator.emulator.events.DataRules;
+import lett.malcolm.consciouscalculator.utils.Events;
 
 /**
  * Represents interpreted data with attached meaning.
@@ -61,6 +62,7 @@ public class Percept {
 	 */
 	@JsonCreator
 	public Percept(String guid, Set<String> references, Object data) {
+		DataRules.assertValid(data);
 		if (references == null) {
 			references = new HashSet<>();
 		}
@@ -95,8 +97,9 @@ public class Percept {
 	
 	@Override
 	public String toString() {
-		if (references.size() == 1 && !references.iterator().next().contains("-")) {
-			return toCompactString();
+		if (guid.contains("-") && references.size() == 1 && !references.iterator().next().contains("-")) {
+			// must be normal guid instance, with one reference to a fact
+			return toCompactPerceptInstanceString();
 		}
 		else {
 			return toLongString();
@@ -104,11 +107,40 @@ public class Percept {
 	}
 	
 	/**
-	 * eg: <code>Number#b405f(3)</code>
-	 * eg: <code>Expression#34f98[Number#b405f(3) Operator#1a667(+) Number#5b503(5)]</code>
+	 * eg: <code>Percept{b405f,ref=NumberFact,3}</code>
+	 * eg: <code>Percept{34f98,ref=ExpressionFact,[Percept{b405f,ref=NumberFact,3},Percept{1a667,ref=OperatorFact,+},Percept{5b503,ref=NumberFact,5}]}</code>
 	 * @return
 	 */
-	private String toCompactString() {
+	private String toLongString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append(getClass().getSimpleName()).append("{");
+		
+		// guid
+		buf.append(Events.toShortGuid(guid())).append(",");
+		
+		// references
+		for (String reference: references) {
+			buf.append("ref=").append(Events.toShortGuid(reference)).append(",");
+		}
+		
+		// content
+		buf.append(DataRules.stringOf(data));
+		
+		buf.append("}");
+		return buf.toString();
+	}
+
+	/**
+	 * Produces:
+	 * eg: <code>Number#b405f(3)</code>
+	 * eg: <code>Expression#34f98[Number#b405f(3) Operator#1a667(+) Number#5b503(5)]</code>
+
+	 * Given:
+	 * eg: <code>Percept{b405f,ref=NumberFact,3}</code>
+	 * eg: <code>Percept{34f98,ref=ExpressionFact,[Percept{b405f,ref=NumberFact,3},Percept{1a667,ref=OperatorFact,+},Percept{5b503,ref=NumberFact,5}]}</code>
+	 * @return
+	 */
+	private String toCompactPerceptInstanceString() {
 		String ref = references.iterator().next();
 		if (ref.endsWith("Fact")) {
 			ref = ref.substring(0, ref.length() - "Fact".length());
@@ -116,7 +148,7 @@ public class Percept {
 		
 		StringBuilder buf = new StringBuilder();
 		buf.append(ref);
-		buf.append("#").append(guid.substring(0,5));
+		buf.append("#").append(Events.toShortGuid(guid()));
 		
 		if (data() != null && data() instanceof Collection) {
 			buf.append("[");
@@ -136,33 +168,44 @@ public class Percept {
 	}
 	
 	/**
-	 * eg: <code>Percept{b405f,ref=NumberFact,3}</code>
-	 * eg: <code>Percept{34f98,ref=ExpressionFact,[Percept{b405f,ref=NumberFact,3},Percept{1a667,ref=OperatorFact,+},Percept{5b503,ref=NumberFact,5}]}</code>
-	 * @return
+	 * Produces:
+	 * eg: <code>Number()</code>
+	 * eg: <code>Expression[Number() Operator() Number()]</code>
+
+	 * Given:
+	 * eg: <code>Percept{NumberFact,ref=<>,null}</code>
+	 * eg: <code>Percept{ExpressionFact,ref=<>,[Percept{NumberFact,ref=<>,null},Percept{OperatorFact,ref=<>,null},Percept{NumberFact,ref=<>,null}]}</code>
+	 * 
+	 * Assumes this instance represents a 'percept-type'
+	 * @deprecated not in use yet, haven't figured out how to make it work for facts that reference others
 	 */
-	private String toLongString() {
-		StringBuilder buf = new StringBuilder();
-		buf.append(getClass().getSimpleName()).append("{");
-		
-		// guid
-		buf.append(guid.substring(0,5)).append(",");
-		
-		// references
-		for (String reference: references) {
-			if (reference.contains("-")) {
-				// guid ref
-				buf.append("ref=").append(reference.substring(0,5)).append(",");
-			}
-			else {
-				// pre-programmed fact ref
-				buf.append("ref=").append(reference).append(",");
-			}
+	@Deprecated
+	private String toCompactPerceptTypeString() {
+		String name = guid();
+		if (name.endsWith("Fact")) {
+			name = name.substring(0, name.length() - "Fact".length());
 		}
 		
-		// content
-		buf.append(DataRules.stringOf(data));
+		StringBuilder buf = new StringBuilder();
+		buf.append(name);
+
+		if (data() == null) {
+			buf.append("()");
+		}
+		else if (data() != null && data() instanceof Collection) {
+			buf.append("[");
+			boolean first = true;
+			for (Object item: (Collection<?>)data()) {
+				if (!first) buf.append(" ");
+				buf.append(DataRules.stringOf(item));
+				first = false;
+			}
+			buf.append("]");
+		}
+		else {
+			buf.append("(").append(DataRules.stringOf(data())).append(")");
+		}
 		
-		buf.append("}");
 		return buf.toString();
 	}
 	

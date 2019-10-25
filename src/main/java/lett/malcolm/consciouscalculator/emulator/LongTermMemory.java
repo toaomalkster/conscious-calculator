@@ -73,6 +73,14 @@ import lett.malcolm.consciouscalculator.utils.CycleHandler;
  * @author Malcolm Lett
  */
 // TODO should it store only Percepts? Or maybe it needs to store BOTH? Or only store Events, with percepts within them for concepts?
+//
+// TODO the search design here needs some re-thought:
+// - the current implementation is too driven by the current data structures and weird behaviours between Event vs Percept.
+// - it's potentially doing too much high-level analysis
+// - need to get back to basics on what an associative-memory really is
+// - the complexity comes from the need to simultaneously support both timeless learned facts, and event-based history memory.
+// - the implementation as it stands is probably close enough, especially given that it only stores the scoring system
+//   for ordering and doesn't expose that information to the caller.
 public class LongTermMemory {
 	private static final Logger log = LoggerFactory.getLogger(LongTermMemory.class);
 	
@@ -115,6 +123,15 @@ public class LongTermMemory {
 		log.debug("LTM Add:    " + event);
 		
 		put(contents, event);
+	}
+	
+	/**
+	 * Gets a memory item by guid.
+	 * @param guid
+	 * @return found event, or null if not found
+	 */
+	public Event get(String guid) {
+		return contents.get(guid);
 	}
 	
 	/**
@@ -168,6 +185,7 @@ public class LongTermMemory {
 		return found.stream()
 			.sorted(Comparator.comparingDouble((Event e) -> scoreRelatedness(reference, e)).reversed())
 			.limit(DEFAULT_MAX_SEARCH_RESULT_COUNT)
+			.distinct()
 			.collect(Collectors.toList());
 	}
 	
@@ -242,6 +260,8 @@ public class LongTermMemory {
 	private List<Percept> flattenPerceptsByData(Percept root) {
 		List<Percept> result = new ArrayList<>();
 		
+		root.toString();
+		
 		CycleHandler cycles = new CycleHandler();
 		Queue<Object> queue = new LinkedList<>();
 		queue.offer(root);
@@ -293,12 +313,17 @@ public class LongTermMemory {
 		List<Event> events = new ArrayList<>();
 		
 		// create percept 'name' (modeled as a 'Name' concept instance wrapped by an event)
-		Percept name = new Percept(fact.guid()+".Name", Collections.singleton(NameFact.GUID), nameOf(fact));
-		events.add(wrapAsPerceptEvent(clock, name));
+		Percept name = null;
+		if (!(fact instanceof NameFact)) {
+			name = new Percept(fact.guid()+".Name", Collections.singleton(NameFact.GUID), nameOf(fact));
+			events.add(wrapAsPerceptEvent(clock, name));
+		}
 
 		// create main percept (wrapped as event)
 		Set<String> references = new HashSet<>();
-		references.add(name.guid());
+		if (name != null) {
+			references.add(name.guid());
+		}
 		for (Fact relatedFact: relatedFacts) {
 			references.add(relatedFact.guid());
 		}

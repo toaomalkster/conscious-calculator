@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
+import lett.malcolm.consciouscalculator.utils.Events;
 import lett.malcolm.consciouscalculator.utils.QuantityUtils;
 
 /**
@@ -69,7 +70,7 @@ abstract class BaseEvent implements Event {
 		buf.append(getClass().getSimpleName()).append("{");
 		
 		// guid
-		buf.append(guid.substring(0,5)).append(",");
+		buf.append(Events.toShortGuid(guid())).append(",");
 		
 		// age
 		long age = Duration.between(timestamp, clock.instant()).toMillis();
@@ -85,7 +86,7 @@ abstract class BaseEvent implements Event {
 		
 		// references
 		for (String reference: references) {
-			buf.append("ref=").append(reference.substring(0,5)).append(",");
+			buf.append("ref=").append(Events.toShortGuid(reference)).append(",");
 		}
 		
 		// content
