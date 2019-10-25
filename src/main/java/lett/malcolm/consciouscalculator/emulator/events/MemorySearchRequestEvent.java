@@ -34,4 +34,12 @@ public class MemorySearchRequestEvent extends BaseEvent implements Event {
 		
 		// not setting REQUEST tag, because didn't come from end user.
 	}
+	
+	/**
+	 * Gets the data to be used to search against.
+	 * @return
+	 */
+	public Object getReferenceData() {
+		return data();
+	}
 }

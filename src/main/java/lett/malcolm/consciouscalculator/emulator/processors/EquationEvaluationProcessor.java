@@ -30,6 +30,7 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact;
+import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact.EquationOperatorSymbol;
 import lett.malcolm.consciouscalculator.emulator.facts.NumberFact;
 import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact;
@@ -119,7 +120,11 @@ public class EquationEvaluationProcessor implements Processor {
 				memoryItem instanceof PerceptEvent) {
 			if (memoryItem.data() instanceof Percept) {
 				Percept percept = (Percept) memoryItem.data();
-				return percept.references().contains(EquationFact.GUID);
+				
+				// must be an equation percept, and must have concrete data
+				// (the 'fact' concepts themselves have null data)
+				return percept.references().contains(EquationFact.GUID) &&
+						percept.data() != null;
 			}
 		}
 		

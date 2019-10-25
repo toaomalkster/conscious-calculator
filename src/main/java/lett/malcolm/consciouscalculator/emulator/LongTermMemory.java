@@ -156,16 +156,50 @@ public class LongTermMemory {
 	 * Rules:
 	 * - Return only "#Name" concept instance for immediate most related event
 	 *  
-	 * @param reference 'class' or specific 'instance' of a concept, fact, or memory.
+	 * @param reference event containing 'class' or specific 'instance' of a concept, fact, or memory.
 	 * @return
 	 */
 	public List<Event> search(Event reference) {
-		List<Event> found = new ArrayList<>();
-		
-		List<Percept> referenceFlatPercepts = (reference.data() instanceof Percept) ?
-				flattenPerceptsByData((Percept) reference.data()) : Collections.emptyList();
+		if (reference instanceof PerceptEvent) {
+			return search((Percept) reference.data());
+		}
+		else {
+			// cannot handle arbitrary events right now
+			return Collections.emptyList();
+		}
+	}
+	
+	/**
+	 * Searches for related entries.
+	 * 
+	 * Related events will be returned in order of "most closely related" within memory,
+	 * but without any indication of that relatedness in the result.
+	 * Processors are expected to decide for themselves which are "better" for their needs.
+	 * 
+	 * Only a limited number of related entries will be returned, up to a maximum
+	 * (currently {@link #DEFAULT_MAX_SEARCH_RESULT_COUNT}).
+	 * 
+	 * eg: searching from:
+	 * <pre>
+	 * 	Percept#10001([
+	 *     Percept#10002(3) -> "#NumberFact",
+	 *     Percept#10003(+) -> "#OperatorFact",
+	 *     Percept#10004(?) -> "#ExpressionTokenFact"
+	 *  ]) -> "#ExpressionFact"
+	 * </pre>
+	 * 
+	 * Rules:
+	 * - Return only "#Name" concept instance for immediate most related event
+	 *  
+	 * @param reference 'class' or specific 'instance' of a concept, fact, or memory.
+	 * @return
+	 */
+	public List<Event> search(Percept reference) {
+		// prepare reference data
+		List<Percept> referenceFlatPercepts = flattenPerceptsByData(reference);
 
 		// do immediate search
+		List<Event> found = new ArrayList<>();
 		if (referenceFlatPercepts.isEmpty()) {
 			addIfNonNull(found, contents.get(reference.guid()));
 		}
@@ -204,10 +238,9 @@ public class LongTermMemory {
 	 * @param event
 	 * @return
 	 */
-	private double scoreRelatedness(Event reference, Event event) {
+	private double scoreRelatedness(Percept reference, Event event) {
 		
-		List<Percept> referenceFlatPercepts = (reference.data() instanceof Percept) ?
-				flattenPerceptsByData((Percept) reference.data()) : Collections.emptyList();
+		List<Percept> referenceFlatPercepts = flattenPerceptsByData(reference);
 		List<Percept> eventFlatPercepts = (event.data() instanceof Percept) ?
 				flattenPerceptsByData((Percept) event.data()) : Collections.emptyList();
 				

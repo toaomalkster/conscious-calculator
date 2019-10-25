@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
