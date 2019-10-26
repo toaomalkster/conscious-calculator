@@ -1,7 +1,13 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 # Conscious Calculator
-Emulating a conscious calculator.
+Application that attempts to emulate consciousness, but at the level of intelligence of a calculator.
+
+Written in Java.
+
+# Documentation
+Theoretical background and design discussions are all available here:
+* [Wiki](https://github.com/toaomalkster/conscious-calculator/wiki)
 
 # Website
 A [test site](https://conscious-calculator.herokuapp.com) is available on Heroku.
