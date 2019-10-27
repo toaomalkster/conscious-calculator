@@ -15,30 +15,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package lett.malcolm.consciouscalculator.emulator.events;
+package lett.malcolm.consciouscalculator.emulator.facts;
 
-import java.time.Clock;
+import java.util.Collections;
+import java.util.List;
 
-import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
+import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
 
 /**
- * Internal request to STM and LTM for hits on memory, by associativity.
+ * Represents the displayed ("spoken") name for something.
  * 
  * @author Malcolm Lett
  */
-public class MemorySearchRequestEvent extends BaseEvent implements Event {
-	public MemorySearchRequestEvent(Clock clock, Object referenceData) {
-		super(clock);
-		this.setData(referenceData);
-		
-		// not setting REQUEST tag, because didn't come from end user.
+public class NameFact implements Fact {
+	public static final String GUID = NameFact.class.getSimpleName();
+
+	@Override
+	public String guid() {
+		return GUID;
 	}
-	
-	/**
-	 * Gets the data to be used to search against.
-	 * @return
-	 */
-	public Object getReferenceData() {
-		return data();
+
+	@Override
+	public List<Class<?>> dataTypes() {
+		return Collections.singletonList(String.class);
 	}
 }

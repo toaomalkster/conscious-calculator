@@ -113,7 +113,11 @@ public class ExpressionEvaluationProcessor implements Processor {
 				memoryItem instanceof PerceptEvent) {
 			if (memoryItem.data() instanceof Percept) {
 				Percept percept = (Percept) memoryItem.data();
-				return percept.references().contains(ExpressionFact.GUID);
+				
+				// must be an expression percept, and must have concrete data
+				// (the 'fact' concepts themselves have null data)
+				return percept.references().contains(ExpressionFact.GUID) &&
+						percept.data() != null;
 			}
 		}
 		

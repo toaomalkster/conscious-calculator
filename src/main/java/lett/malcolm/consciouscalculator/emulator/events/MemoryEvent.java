@@ -33,6 +33,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
  * @author Malcolm Lett
  */
 // TODO when recalling 'concepts' from LTM, the existing structure here may not work
+// TODO change to be able to store raw Percept data, or even collections of Percepts
 public class MemoryEvent extends BaseEvent implements Event {
 	public MemoryEvent(Clock clock, String eventType, Object eventData) {
 		super(clock);

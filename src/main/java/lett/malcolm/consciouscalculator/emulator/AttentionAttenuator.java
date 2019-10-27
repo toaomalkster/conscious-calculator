@@ -17,11 +17,13 @@
  */
 package lett.malcolm.consciouscalculator.emulator;
 
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lett.malcolm.consciouscalculator.emulator.events.ActionEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
@@ -31,6 +33,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
  * @author Malcolm Lett
  */
 public class AttentionAttenuator {
+	private static final Logger LOG = LoggerFactory.getLogger(AttentionAttenuator.class);
+	
 	private Queue<? extends Object> commandStream;
 	private Queue<? extends Object> consciousFeedbackStream;
 	private WorkingMemory workingMemory;

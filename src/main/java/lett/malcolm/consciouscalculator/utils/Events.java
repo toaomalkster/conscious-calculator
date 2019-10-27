@@ -38,6 +38,24 @@ public abstract class Events {
 	 */
 	public static BinaryOperator<Event> strongest() {
 		return (a,b) -> a.strength() >= b.strength() ? a : b;
-				
+	}
+	
+	/**
+	 * Gets abbreviated guid, if the guid can be abbreviated, otherwise
+	 * returns as is.
+	 * For example, for Fact references, returns the full Fact name.
+	 * @return
+	 */
+	public static String toShortGuid(String guid) {
+		if (guid == null) {
+			return null;
+		}
+		else if (guid.contains("-")) {
+			return guid.substring(0,5);
+		}
+		else {
+			// possibly a Fact name reference
+			return guid;
+		}
 	}
 }

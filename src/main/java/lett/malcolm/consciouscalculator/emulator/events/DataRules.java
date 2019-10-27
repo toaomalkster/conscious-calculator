@@ -17,13 +17,11 @@
  */
 package lett.malcolm.consciouscalculator.emulator.events;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +30,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
+import lett.malcolm.consciouscalculator.utils.CycleHandler;
 
 /**
  * This class defines rules around what data types and structures may be used in
@@ -74,7 +73,6 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
  */
 // TODO should it clean-up collection sub-types to basic List/Map (could possibly convert any Collection to List at same time)
 public class DataRules {
-	private static final int EXPECTED_MAX_NUMBER_OF_OBJECTS = 100;
 	private static final Set<Class<?>> IMMUTABLE_SIMPLE_TYPES = new HashSet<Class<?>>();
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 	
@@ -357,47 +355,6 @@ public class DataRules {
 		return (T) clone;
 	}
 	
-	/**
-	 * Uses object reference for identity.
-	 * 
-	 * Works in two modes:
-	 * - object only
-	 * - map from 'object' to 'mirror'
-	 * 
-	 * Where docs refer to 'object', they always mean on the 'key' side of the map.
-	 */
-	private static class CycleHandler {
-		private Map<Object, Object> observed = new IdentityHashMap<>(EXPECTED_MAX_NUMBER_OF_OBJECTS);
-		
-		/**
-		 * Records that an obj has been observed, and indicates whether it was previously observed.
-		 * Always ignores nulls.
-		 * @param obj
-		 * @return
-		 */
-		public boolean observeAndIsDuplicate(Object obj) {
-			if (obj != null) {
-				return observed.put(obj, obj) != null;
-			}
-			return false;
-		}
-
-		/**
-		 * Always ignores nulls.
-		 * @param obj
-		 * @param mirror
-		 */
-		public void observeMirror(Object obj, Object mirror) {
-			if (obj != null) {
-				observed.put(obj, mirror);
-			}
-		}
-		
-		public Object getObservedMirror(Object obj) {
-			return observed.get(obj);
-		}
-	}
-
 	/**
 	 * Non-recursive.
 	 * @param obj

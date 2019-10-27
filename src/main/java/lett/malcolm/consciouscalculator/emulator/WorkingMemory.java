@@ -55,6 +55,12 @@ public class WorkingMemory {
 		this.maxSize = maxSize;
 	}
 	
+	private void addInternal(Event event) {
+		// FIXME not ideal to sort every time, but here as a quick work around for now
+		contents.add(event);
+		contents.sort(Comparator.comparing(Event::strength).reversed());
+	}
+	
 	/**
 	 * Stores the event, in order.
 	 * May cause compaction or even loss of lower-strength events.
@@ -73,7 +79,7 @@ public class WorkingMemory {
 			contents.remove(existing.get());
 			replaced = true;
 		}
-		contents.add(event);
+		addInternal(event);
 		
 		if (replaced) {
 			log.debug("WM Replace: " + event);
@@ -88,8 +94,6 @@ public class WorkingMemory {
 	 * @return all memory items, in priority order of navigation
 	 */
 	public Collection<Event> all() {
-		// FIXME not ideal to sort every time, but here as a quick work around for now
-		contents.sort(Comparator.comparing(Event::strength).reversed());
 		return Collections.unmodifiableList(contents);
 	}
 	
@@ -242,6 +246,26 @@ public class WorkingMemory {
 		// constructed in reverse order, so flip order and return
 		Collections.reverse(chain);
 		return chain;
+	}
+
+	/**
+	 * Tests whether there exists a chain of events starting from {@code startEvent} and ending with {@code endEvent},
+	 * based on back-references.
+	 * If {@code endEvent} directly references {@code startEvent}, then this returns {@code true}, regardless of whether
+	 * either event are held within working memory. For any transitive references, requires the chain of events to be present
+	 * within working memory.
+	 * @param startEvent
+	 * @param endEvent
+	 * @return {@code true} if a chain can be found
+	 */
+	public boolean containsChainFromTo(Event startEvent, Event endEvent) {
+		String targetGuid = startEvent.guid();
+		if (endEvent.references().contains(targetGuid)) {
+			return true;
+		}
+		
+		return this.getChainEndingWith(endEvent).stream()
+				.anyMatch(e -> e.references().contains(targetGuid));
 	}
 	
 	/**

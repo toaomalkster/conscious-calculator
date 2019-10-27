@@ -17,13 +17,12 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -33,6 +32,7 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.DataRules;
 import lett.malcolm.consciouscalculator.emulator.events.MemoryEvent;
 import lett.malcolm.consciouscalculator.emulator.events.MemorySearchRequestEvent;
+import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.events.StuckThoughtEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
@@ -52,6 +52,9 @@ import lett.malcolm.consciouscalculator.utils.Events;
  * 
  * @author Malcolm Lett
  */
+//TODO tech-debt: don't use HANDLED flag, instead using presence of percepts that might be useful.
+//Even if something is present for some other reason, try it first before doing query.
+//Use the AttemptTrackingEvent to track that that pre-existing percept was of no use.
 public class FindMatchingConceptProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(FindMatchingConceptProcessor.class);
 
@@ -76,15 +79,15 @@ public class FindMatchingConceptProcessor implements Processor {
 				Event target = findTargetMemoryItem((StuckThoughtEvent) memoryItem, memory);
 				
 				// see if concept already loaded from LTM
-				Percept concept = null;
+				List<Percept> concepts = null;
 				if (target != null) {
-					concept = findConceptInWorkingMemory(target, memory);
+					concepts = findConceptInWorkingMemory(target, memory);
 				}
 				
 				// OR attempt to load concept from LTM
 				// (TODO if already present and not responded to yet and there is no corresponding StuckThoughtEvent, then do nothing)
 				// (fluent API: emit(new Event(), ifNoUnprocessedEquivalentsPresent(), ...??)
-				if (target != null && concept == null) {
+				if (target != null && concepts.isEmpty()) {
 					Event event = new MemorySearchRequestEvent(clock, target.data());
 					event.setStrength(target.strength() + 0.01);
 					event.references().add(target.guid());
@@ -96,6 +99,13 @@ public class FindMatchingConceptProcessor implements Processor {
 					}
 					return result;
 				}
+				
+				// ELSE:
+				// if concepts are present in WM, then great, job done.
+				
+				// TODO next steps:
+				// - may need to "try again" in the form of doing a "harder" or "longer" search, or searching
+				//   for deeper, less directly related concepts.
 			}
 		}
 		
@@ -114,9 +124,11 @@ public class FindMatchingConceptProcessor implements Processor {
 	 * @param memoryItem
 	 * @return
 	 */
+	// TODO need to make more flexible, for now have limited to only PerceptEvents to solve infinite loops
 	private boolean acceptsTargetEvent(Event memoryItem) {
-		return !(memoryItem instanceof MemorySearchRequestEvent) &&
-				hasPercept(memoryItem) &&
+		//return !(memoryItem instanceof MemorySearchRequestEvent) &&
+		return (memoryItem instanceof PerceptEvent) &&
+				hasAnyPercepts(memoryItem) &&
 				!memoryItem.tags().contains(EventTag.COMPLETED) &&
 				!memoryItem.tags().contains(EventTag.HANDLED);
 	}
@@ -192,42 +204,53 @@ public class FindMatchingConceptProcessor implements Processor {
 	}
 
 	/**
-	 * Looks for a MemoryEvent containing a Percept,
+	 * Looks for a MemoryEvent containing one or more Percepts,
 	 * and where the event links to {@code targetEvent}.
 	 * @param targetEvent
 	 * @param memory
-	 * @return
+	 * @return list of percepts from single strongest event, empty if none found
 	 */
-	private Percept findConceptInWorkingMemory(Event targetEvent, WorkingMemory memory) {
-		return memory.all().stream()
+	// TODO be more flexible in using pre-existing percepts (see TODO at class-level)
+	private List<Percept> findConceptInWorkingMemory(Event targetEvent, WorkingMemory memory) {
+		List<Percept> res = memory.all().stream()
 			.filter(e -> e instanceof MemoryEvent)
-			.filter(e -> e.references().contains(targetEvent.guid()))
-			.filter(this::hasPercept)
+			.filter(e -> memory.containsChainFromTo(targetEvent, e))
+			.filter(this::hasAnyPercepts)
 			.reduce(Events.strongest())
-			.map(getPercept())
-			.orElse(null);
+			.map(this::getPercepts)
+			.orElse(Collections.emptyList());
+		return res;
 	}
 	
-	private boolean hasPercept(Event e) {
+	private boolean hasAnyPercepts(Event e) {
+		return !getPercepts(e).isEmpty();
+	}
+	
+	// note: LongTermMemorySearchProcessor currently emits a MemoryEvent<eventData:List<Percept and/or Event>>
+	private List<Percept> getPercepts(Event e) {
+		Collection<?> collection = null;
 		if (e.data() instanceof Percept) {
-			return true;
+			return Collections.singletonList((Percept) e.data());
 		}
-		else if (e instanceof MemoryEvent && ((MemoryEvent) e).eventData() instanceof Percept) {
-			return true;
+		else if (e.data() instanceof Collection) {
+			collection = (Collection<?>) e.data();
 		}
-		return false;
-	}
-	
-	private Function<Event, Percept> getPercept() {
-		return e -> {
+		else if (e instanceof MemoryEvent) {
 			MemoryEvent mem = (MemoryEvent) e;
-			if (e.data() instanceof Percept) {
-				return (Percept) e.data();
+			if (mem.eventData() instanceof Percept) {
+				return Collections.singletonList((Percept) mem.eventData());
 			}
-			else if (mem.eventData() instanceof Percept) {
-				return (Percept) mem.eventData();
+			else if (mem.eventData() instanceof Collection) {
+				collection = (Collection<?>) mem.eventData();
 			}
-			return null;
-		};
+		}
+		
+		if (collection != null) {
+			return collection.stream()
+				.filter(o -> o instanceof Percept)
+				.map(o -> (Percept) o)
+				.collect(Collectors.toList());
+		}
+		return Collections.emptyList();
 	}
 }
