@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -33,6 +32,7 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.DataRules;
 import lett.malcolm.consciouscalculator.emulator.events.MemoryEvent;
 import lett.malcolm.consciouscalculator.emulator.events.MemorySearchRequestEvent;
+import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.events.StuckThoughtEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
@@ -100,8 +100,12 @@ public class FindMatchingConceptProcessor implements Processor {
 					return result;
 				}
 				
-				// pick best concept
-				// TODO use TriedAttemptsEvent to track which things have already been tried and discarded.
+				// ELSE:
+				// if concepts are present in WM, then great, job done.
+				
+				// TODO next steps:
+				// - may need to "try again" in the form of doing a "harder" or "longer" search, or searching
+				//   for deeper, less directly related concepts.
 			}
 		}
 		
@@ -120,8 +124,10 @@ public class FindMatchingConceptProcessor implements Processor {
 	 * @param memoryItem
 	 * @return
 	 */
+	// TODO need to make more flexible, for now have limited to only PerceptEvents to solve infinite loops
 	private boolean acceptsTargetEvent(Event memoryItem) {
-		return !(memoryItem instanceof MemorySearchRequestEvent) &&
+		//return !(memoryItem instanceof MemorySearchRequestEvent) &&
+		return (memoryItem instanceof PerceptEvent) &&
 				hasAnyPercepts(memoryItem) &&
 				!memoryItem.tags().contains(EventTag.COMPLETED) &&
 				!memoryItem.tags().contains(EventTag.HANDLED);
@@ -206,13 +212,14 @@ public class FindMatchingConceptProcessor implements Processor {
 	 */
 	// TODO be more flexible in using pre-existing percepts (see TODO at class-level)
 	private List<Percept> findConceptInWorkingMemory(Event targetEvent, WorkingMemory memory) {
-		return memory.all().stream()
+		List<Percept> res = memory.all().stream()
 			.filter(e -> e instanceof MemoryEvent)
-			.filter(e -> e.references().contains(targetEvent.guid()))
+			.filter(e -> memory.containsChainFromTo(targetEvent, e))
 			.filter(this::hasAnyPercepts)
 			.reduce(Events.strongest())
 			.map(this::getPercepts)
 			.orElse(Collections.emptyList());
+		return res;
 	}
 	
 	private boolean hasAnyPercepts(Event e) {
