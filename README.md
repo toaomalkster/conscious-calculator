@@ -1,4 +1,5 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://travis-ci.com/toaomalkster/conscious-calculator.svg?branch=master)](https://travis-ci.com/toaomalkster/conscious-calculator)
 
 # Conscious Calculator
 Application that attempts to emulate consciousness, but at the level of intelligence of a calculator.
