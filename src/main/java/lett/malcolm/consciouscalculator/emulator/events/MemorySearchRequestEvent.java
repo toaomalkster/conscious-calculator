@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.events;
 
-
 import java.time.Clock;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;

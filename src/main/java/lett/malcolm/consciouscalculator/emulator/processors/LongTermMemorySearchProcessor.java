@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import lett.malcolm.consciouscalculator.emulator.LongTermMemory;
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
+import lett.malcolm.consciouscalculator.emulator.events.MemoryEvent;
 import lett.malcolm.consciouscalculator.emulator.events.MemorySearchRequestEvent;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
@@ -65,14 +66,20 @@ public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcess
 			if (accepts(memoryItem)) {
 				Object referenceData = ((MemorySearchRequestEvent) memoryItem).getReferenceData();
 				
-				List<Event> resultsReadyForLoading = search(referenceData);
+				// do search
+				List<Object> found = search(referenceData);
 				
-				Event updatedMemoryItem = memoryItem.clone();
-				updatedMemoryItem.tags().add(EventTag.HANDLED);
-				resultsReadyForLoading.add(updatedMemoryItem);
-				
-				return resultsReadyForLoading;
-				
+				// emit result
+				if (!found.isEmpty()) {
+					Event resultEvent = wrap(found);
+					resultEvent.setStrength(memoryItem.strength() + 0.01);
+					resultEvent.references().add(memoryItem.guid());
+					
+					Event updatedMemoryItem = memoryItem.clone();
+					updatedMemoryItem.tags().add(EventTag.HANDLED);
+					
+					return Arrays.asList(resultEvent, updatedMemoryItem);
+				}
 			}
 		}
 		
@@ -84,7 +91,7 @@ public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcess
 	 */
 	// TODO probably needs a more advanced way of knowing whether it's done, because both
 	// ShortTermMemorySearchProcessor and LongTermMemorySearchProcessor will be trying to do the same
-	// thing, and may want both results to be ultimately loaded.
+	// thing, and the consumer may want both results to be ultimately loaded.
 	private static boolean accepts(Event memoryItem) {
 		return  memoryItem instanceof MemorySearchRequestEvent &&
 				memoryItem.data() != null &&
@@ -92,7 +99,11 @@ public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcess
 				!memoryItem.tags().contains(EventTag.HANDLED);
 	}
 	
-	private List<Event> search(Object referenceData) {
+	/**
+	 * @param referenceData
+	 * @return raw events and/or percepts as persisted within memory
+	 */
+	private List<Object> search(Object referenceData) {
 		List<Event> longTermMemories;
 		if (referenceData instanceof PerceptEvent) {
 			longTermMemories = longTermMemory.search(((PerceptEvent) referenceData).data());
@@ -105,15 +116,16 @@ public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcess
 			return Collections.emptyList();
 		}
 		
-		// TODO wrap as what?
-		// - individual MemoryEvent -- might already be that in some cases
-		// - also accept individual PerceptEvent?
-		// - one big MemoryEvent or MemorySearchResultEvent?
-		// - what about just cloning the events but adding a FROM_MEMORY tag?
-//		longTermMemories.stream()
-//			.map(mapper)
-		
-		return longTermMemories;
+		return longTermMemory.unwrapPercepts(longTermMemories);
+	}
+
+	/**
+	 * @param foundMemories raw events and/or percepts as found from within memory
+	 * @return
+	 */
+	private Event wrap(List<Object> foundMemories) {
+		// mis-using the originally intended usage of MemoryEvent, in deference to new ideas
+		return new MemoryEvent(clock, "", foundMemories);
 	}
 
 }

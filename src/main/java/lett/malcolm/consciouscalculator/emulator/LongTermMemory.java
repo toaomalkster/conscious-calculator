@@ -86,11 +86,11 @@ public class LongTermMemory {
 	
 	private static final int DEFAULT_MAX_SEARCH_RESULT_COUNT = 10;
 
-	private final int maxSize;
+	//private final int maxSize; // TODO
 	private final Map<String, Event> contents = new HashMap<>();
 	
 	public LongTermMemory(Clock clock, int maxSize) {
-		this.maxSize = maxSize;
+		//this.maxSize = maxSize;
 		addPreprogrammedConcepts(clock, contents);
 	}
 
@@ -99,9 +99,11 @@ public class LongTermMemory {
 	 * @param contents
 	 */
 	protected static void addPreprogrammedConcepts(Clock clock, Map<String, Event> contents) {
-		// roots
+		// technical roots
+		// (implicitly required by logical roots and others)
 		putAll(contents, wrapAsFactEvents(clock, new NameFact()));
 
+		// logical roots
 		putAll(contents, wrapAsFactEvents(clock, new NumberFact()));
 		putAll(contents, wrapAsFactEvents(clock, new StatementTruthFact()));
 		
@@ -190,8 +192,14 @@ public class LongTermMemory {
 	 * 
 	 * Rules:
 	 * - Return only "#Name" concept instance for immediate most related event
+	 * 
+	 * Always returns immutable clones of the found memory items.
+	 * 
+	 * Implementation note:
+	 * - if we ever need to return objects 'by reference', then we can add a separate getForUpdate(guid) method.
+	 * - Currently wraps Percepts in PerceptEvents, but this will change in the future.
 	 *  
-	 * @param reference 'class' or specific 'instance' of a concept, fact, or memory.
+	 * @param reference 'class' or specific 'instance' of a concept, fact, or memory (cloned)
 	 * @return
 	 */
 	public List<Event> search(Percept reference) {
@@ -214,12 +222,25 @@ public class LongTermMemory {
 		
 		// TODO pull up related concepts? (maybe just to one level?)
 		
-		// order and filter
-		// TODO filter on "#Name#" facts
+		// cloen, order and filter
+		// TODO filter to omit unnecessary "#Name#" facts
 		return found.stream()
 			.sorted(Comparator.comparingDouble((Event e) -> scoreRelatedness(reference, e)).reversed())
 			.limit(DEFAULT_MAX_SEARCH_RESULT_COUNT)
 			.distinct()
+			.collect(Collectors.toList());
+	}
+	
+	/**
+	 * Helper to unwrap PerceptEvents into raw Percepts, when appropriate.
+	 * 
+	 * Just a temporary work-around until these things are resolved better.
+	 * @param events
+	 * @return copy of list, with PerceptEvents replaced by Percepts, and other events passed unchanged.
+	 */
+	public List<Object> unwrapPercepts(List<Event> events) {
+		return events.stream()
+			.map(e -> (e instanceof PerceptEvent && e.data() instanceof Percept) ? e.data() : e)
 			.collect(Collectors.toList());
 	}
 	
