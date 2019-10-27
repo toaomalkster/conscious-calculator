@@ -27,11 +27,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.assertj.core.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -278,12 +278,12 @@ public class LongTermMemory {
 				
 				// concept to concept match
 				if (it.guid().equals(other.guid())) {
-					score = Objects.areEqual(it.data(), other.data()) ? 1.0 : 0.8;
+					score = Objects.equals(it.data(), other.data()) ? 1.0 : 0.8;
 				}
 				
 				// instance to concept match
 				else if (it.references().contains(other.guid())) {
-					score = Objects.areEqual(it.data(), other.data()) ? 0.8 : 0.6;
+					score = Objects.equals(it.data(), other.data()) ? 0.8 : 0.6;
 				}
 				
 				// TODO concept to instance ?
