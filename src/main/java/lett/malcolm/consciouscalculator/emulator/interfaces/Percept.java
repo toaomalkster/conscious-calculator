@@ -87,10 +87,19 @@ public class Percept {
 	}
 
 	/**
-	 * Deep clone.
+	 * Deep exact clone.
 	 */
 	public Percept clone() {
 		return new Percept(guid,
+				new HashSet<>(this.references),
+				DataRules.clone(this.data));
+	}
+
+	/**
+	 * Deep clone, with newly generated GUID.
+	 */
+	public Percept cloneAsNew() {
+		return new Percept(UUID.randomUUID().toString(),
 				new HashSet<>(this.references),
 				DataRules.clone(this.data));
 	}

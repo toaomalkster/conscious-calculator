@@ -45,6 +45,7 @@ import lett.malcolm.consciouscalculator.emulator.processors.ExpressionEvaluation
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionResponseProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.FindMatchingConceptProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.LongTermMemorySearchProcessor;
+import lett.malcolm.consciouscalculator.emulator.processors.QuickPartiallyUnparsableExpressionSolverProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.SpeakActionProcessor;
 import lett.malcolm.consciouscalculator.utils.Events;
 
@@ -116,6 +117,7 @@ public class Emulator {
 		processors.add(new SpeakActionProcessor(clock));
 		processors.add(new FindMatchingConceptProcessor(clock));
 		processors.add(new LongTermMemorySearchProcessor(clock));
+		processors.add(new QuickPartiallyUnparsableExpressionSolverProcessor(clock));
 		
 		for (Processor processor: processors) {
 			if (processor instanceof ActionAwareProcessor) {

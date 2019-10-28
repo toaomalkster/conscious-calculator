@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.facts;
 
-
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +28,17 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
 // TODO reference ExpressionTokenFact
 public class NumberFact implements Fact {
 	public static final String GUID = NumberFact.class.getSimpleName();
+	
+	// ----
+	// Knowledge of numbers that would otherwise be represented within data held in LTM
+	// ----
+	
+	/** For unknown values that we need to guess/choose, assume it's limited by this */
+	public static int ASSUMED_MIN_VALUE = 0;
 
+	/** For unknown values that we need to guess/choose, assume it's limited by this */
+	public static int ASSUMED_MAX_VALUE = 100;
+	
 	@Override
 	public String guid() {
 		return GUID;
