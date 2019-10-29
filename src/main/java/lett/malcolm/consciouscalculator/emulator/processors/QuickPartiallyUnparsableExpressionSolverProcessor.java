@@ -34,6 +34,8 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.MemoryEvent;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.events.StuckThoughtEvent;
+import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
+import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
 import lett.malcolm.consciouscalculator.emulator.facts.NumberFact;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
@@ -43,9 +45,13 @@ import lett.malcolm.consciouscalculator.utils.Events;
 import lett.malcolm.consciouscalculator.utils.MyMath;
 
 /**
- * This is a quick'n'nasty solution for the rest of the tasks needed to solve partially parsed expressions.
+ * This is a quick'n'nasty solution for the rest of the tasks needed to solve partially parsed expressions/equations.
  * Prerequisites: requires that WM is populated by some remembered concepts that can help us infer the meaning of
- * the unknown expression component. 
+ * the unknown expression or equation component.
+ * 
+ * The implementation here is built on top of domain knowledge, under the principle that the 'Conscious Calculator' is
+ * an emulated consciousness with the intelligence of a calculator. Thus it acceptable to have pre-programmed knowledge and handling
+ * of equation and expressions. Thus we don't need to implement a full general intelligence, in order to be authentic.
  * 
  * Infers unknown expression and equation tokens, based on concepts present within WM.
  * eg: "3 + ? = 8"
@@ -64,6 +70,7 @@ import lett.malcolm.consciouscalculator.utils.MyMath;
  * 
  * @author Malcolm Lett
  */
+// TODO In a general purpose solution: -- this class includes some notes throughout of what a more complete, generic solution might look
 public class QuickPartiallyUnparsableExpressionSolverProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(QuickPartiallyUnparsableExpressionSolverProcessor.class);
 
@@ -84,21 +91,24 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 	 * 
 	 * Don't know how to stop unnecessary infinite loops when other processors have completed the thought.
 	 */
+	// TODO In a general purpose solution: each of steps here would be an independent processor, which would
+	//      emit results back into WM for others to pick up.
 	@Override
 	public List<Event> process(List<Event> events, WorkingMemory memory) {
 		for (Event memoryItem: memory.all()) {
-			Event target;
-			if (acceptsTriggerEvent(memoryItem) && (target = findTargetMemoryItem(memoryItem, memory)) != null) {
+			Event targetEvent;
+			if (acceptsTriggerEvent(memoryItem) && (targetEvent = findTargetMemoryItem(memoryItem, memory)) != null) {
+				Percept targetExpr = ((PerceptEvent) targetEvent).data(); // expr or equation
+				
 				// find helpful concepts
-				List<Percept> concepts = findConceptInWorkingMemory(target, memory);
+				List<Percept> concepts = findConceptInWorkingMemory(targetEvent, memory);
 				
 				// apply knowledge of concepts to find the problem
-				Problem problemItem = findProblem(((PerceptEvent) target).data(), concepts);
+				Problem problemItem = findProblem(targetExpr, concepts);
 				
 				// apply knowledge of concepts to find the solution
-				// TODO should be pumping each partial result back into WM
 				Percept solutionItem = null;
-				Percept solution = null;
+				Percept solvedExpr = null;
 				if (problemItem != null) {
 					solutionItem = fillInMissingConcept(problemItem, concepts);
 				}
@@ -106,13 +116,13 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 					solutionItem = interpretValue(solutionItem, concepts);
 				}
 				if (solutionItem != null) {
-					solution = rebuildOriginalRequest(((PerceptEvent) target).data(), problemItem, solutionItem);
+					solvedExpr = rebuildOriginalRequest(targetExpr, problemItem, solutionItem);
 				}
 				
-				// emit
-				if (solution != null) {
-					Event result = new PerceptEvent(clock, solution);
-					result.references().add(target.guid());
+				// emit 'attempt' at a solved expr
+				if (solvedExpr != null) {
+					Event result = new PerceptEvent(clock, solvedExpr);
+					result.references().add(targetEvent.guid());
 					return Arrays.asList(result);
 				}
 			}
@@ -124,6 +134,8 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 	// TODO block once handled
 	private boolean acceptsTargetEvent(Event memoryItem) {
 		return memoryItem instanceof PerceptEvent &&
+				(((PerceptEvent) memoryItem).data().references().contains(EquationFact.GUID) ||
+						((PerceptEvent) memoryItem).data().references().contains(ExpressionFact.GUID)) &&
 				!memoryItem.tags().contains(EventTag.COMPLETED) &&
 				!memoryItem.tags().contains(EventTag.HANDLED);
 	}
@@ -237,20 +249,20 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 	 * 
 	 * Example: partially parsed Equation:
 	 * <code>Equation: Number(3) Operator(+) ExpressionToken(?) EquationOperator(=) Number(8)  (ref=TextRequestEvent)</code>
-	 * @param target
+	 * @param targetExpr expression or equation
 	 * @param concepts
 	 * @return percept within target that needs work, or null if none found
 	 */
-	// TODO this is only a quick solution, will need quite a lot more magic for a general purpose solution
-	// TODO in reality it needs to be a mixture of processors that apply different matching strategies
-	// TODO a mathematical-type algorithmic solution would be suitable here
-	// (It's also the sort of thing that could be learned by a NN)
-	private Problem findProblem(Percept target, List<Percept> concepts) {
+	// TODO In a general purpose solution: this would need a mathematical-type algorithmic solution.
+	//      And it would need to be a mixture of processors that apply different matching strategies.
+	//      It's also the sort of thing that could be learned by a NN.
+	//      Additionally, the logic here makes all sorts of assumptions about the data types.
+	private Problem findProblem(Percept targetExpr, List<Percept> concepts) {
 		// pick most closely matching concept
 		// eg: Equations = Number Operator Number EquationOperator Number
 		Percept matchingConcept = null;
 		for (Percept concept: concepts) {
-			if (target.references().contains(concept.guid())) {
+			if (targetExpr.references().contains(concept.guid())) {
 				matchingConcept = concept;
 			}
 		}
@@ -258,20 +270,24 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 			return null;
 		}
 		
+		// FIXME stops working at this point, because LTM entry for Expression/EquationFacts don't
+		// have any data(). And it's a bit tricky to put data in there.
+		
+		// check assumptions
+		if (!(targetExpr.data() instanceof List) || !(matchingConcept instanceof List)) {
+			return null;
+		}
+		
 		// find the discrepancy
-		// FIXME could be any combination of data types
-		if (target.data() instanceof List && matchingConcept instanceof List) {
-			// FIXME no reason to assume the lists contain Percept objects, or all Percept objects
-			// FIXME if the lists are different lengths then could be an indication of 'missing' or 'extra' information
-			List<Percept> targetItems = (List<Percept>) target.data();
-			List<Percept> conceptItems = (List<Percept>) matchingConcept.data();
-			for (int i=0; i < targetItems.size(); i++) {
-				Percept targetItem = (i < targetItems.size()) ? targetItems.get(i) : null;
-				Percept conceptItem = (i < conceptItems.size()) ? conceptItems.get(i) : null;
-				if (targetItem != null && conceptItem != null) {
-					if (!targetItem.references().contains(conceptItem.guid())) {
-						return new Problem(targetItem, conceptItem);
-					}
+		// FIXME if the lists are different lengths then could be an indication of 'missing' or 'extra' information
+		List<Percept> targetItems = (List<Percept>) targetExpr.data();
+		List<Percept> conceptItems = (List<Percept>) matchingConcept.data();
+		for (int i=0; i < targetItems.size(); i++) {
+			Percept targetItem = (i < targetItems.size()) ? targetItems.get(i) : null;
+			Percept conceptItem = (i < conceptItems.size()) ? conceptItems.get(i) : null;
+			if (targetItem != null && conceptItem != null) {
+				if (!targetItem.references().contains(conceptItem.guid())) {
+					return new Problem(targetItem, conceptItem);
 				}
 			}
 		}
@@ -281,7 +297,7 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 	
 	/**
 	 * Produces a new percept to replace the problem percept, with information partially solved.
-	 * Here, it attempts to populate the unknown detailed concept.
+	 * Here, it attempts to infer the underlying concrete concept (aka type) of the unknown item.
 	 * 
 	 * eg:
 	 * {@code ExpressionToken(?)} vs {@code Percept#Nummber} => conclusion: {@code Number(?)} - '?' is a Number, of unknown value.
@@ -289,10 +305,7 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 	 * @param concepts
 	 * @return
 	 */
-	// TODO this is a pathetically quick and dumb solution for now
 	private Percept fillInMissingConcept(Problem problem, List<Percept> concepts) {
-		// match-up concepts
-		Percept matchedConcept = null;
 		if (problem.targetItem != null && problem.conceptItem != null) {
 			// just dumbly assume target should have been instance of the concept
 			return new Percept(
@@ -307,35 +320,36 @@ public class QuickPartiallyUnparsableExpressionSolverProcessor implements Proces
 	 * Produces a new percept to replace the problem percept, with information partially solved.
 	 * Here's it attempts to provide concrete values.
 	 * 
-	 * eg - step 1:
-	 * {@code ExpressionToken(?)} vs {@code Percept#Nummber} => conclusion: {@code Number(?)} - '?' is a Number, of unknown value.
-	 * 
-	 * eg - step 2:
+	 * eg:
 	 * {@code Number(?)} => pick a number
-	 * {@code ExpressionToken(?)}
 	 * @param problem
 	 * @param concepts
 	 * @return
 	 */
-	// TODO this is a pathetically quick and dumb solution for now
-	// TODO in a more complete form, this would contain a long list of strategies for experimentation on different percept and data types
-	// TODO this should totally be a mixture of processors
-	// TODO these are strategies that could be "learned"
+	// TODO only knows how to fill in numbers for now
+	// TODO In a general purpose solution: this would be a long list of strategies for experimentation on different percept and data types.
+	//      And it would be a mixture of processors. These are strategies that could be "learned".
 	private Percept interpretValue(Percept problem, List<Percept> concepts) {
 		if (problem.references().contains(NumberFact.GUID) && !(problem.data() instanceof Number)) {
 			// it's a number, but the value is unknown, so guess one
 			int value = MyMath.randMinMax(NumberFact.ASSUMED_MIN_VALUE, NumberFact.ASSUMED_MAX_VALUE);
 			return new Percept(
-					problem.references().iterator().next(), // TODO need to handle more than just one?
+					problem.references().iterator().next(), // TODO need to handle more than just one reference?
 					value);
 		}
 		
 		return null;
 	}
-	
-	// TODO again, pathetically hard-coded high-assuming solution
-	private Percept rebuildOriginalRequest(Percept original, Problem problemItem, Percept solvedProblemItem) {
-		Percept clone = original.cloneAsNew();
+
+	/**
+	 * Expands the original expression or equation with the (attempted) solved value.
+	 * @param originalExpr original problem expression or equation
+	 * @param problemItem item within originalExpr
+	 * @param solvedProblemItem replacement value
+	 * @return
+	 */
+	private Percept rebuildOriginalRequest(Percept originalExpr, Problem problemItem, Percept solvedProblemItem) {
+		Percept clone = originalExpr.cloneAsNew();
 		List<Percept> list = (List<Percept>) clone.data();
 		
 		ListIterator<Percept> listItr = list.listIterator();
