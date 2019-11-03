@@ -37,6 +37,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.ProcessorOutput;
 import lett.malcolm.consciouscalculator.emulator.interfaces.STMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 import lett.malcolm.consciouscalculator.emulator.processors.EquationEvaluationProcessor;
@@ -97,7 +98,7 @@ public class Emulator {
 		this.workingMemory = new WorkingMemory(DEFAULT_WORKING_MEMORY_MAX_SIZE);
 		this.shortTermMemory = new ShortTermMemory(DEFAULT_SHORT_TERM_MEMORY_MAX_SIZE);
 		this.longTermMemory = new LongTermMemory(clock, DEFAULT_LONG_TERM_MEMORY_MAX_SIZE);
-		this.attentionAttenuator = new AttentionAttenuator(commandStream,
+		this.attentionAttenuator = new AttentionAttenuator(clock, commandStream,
 				consciousFeedbackStream, workingMemory);
 		this.consciousFeedbacker = new ConsciousFeedbacker(workingMemory);
 		this.consciousFeedbackToSTMInterceptor = new ConsciousFeedbackToSTMInterceptor(clock, shortTermMemory);
@@ -152,7 +153,7 @@ public class Emulator {
 		int ticksWithoutUpdates = 0;
 		while (triggerQueue.poll() != null) {
 			List<Event> interceptedEvents = new ArrayList<>();
-			List<ProcessedOutput> processedOutputs = new ArrayList<>();
+			List<ProcessorOutput> processedOutputs = new ArrayList<>();
 			boolean updated = false;
 			
 			// input intercepting
@@ -171,15 +172,14 @@ public class Emulator {
 				interceptedEvents = Collections.unmodifiableList(interceptedEvents);
 				List<Event> eventSet = processor.process(interceptedEvents, workingMemory);
 				if (eventSet != null && !eventSet.isEmpty()) {
-					processedOutputs.add(new ProcessedOutput(processor, eventSet));
+					processedOutputs.add(new ProcessorOutput(processor, eventSet));
 				}
 			}
 			updated |= !processedOutputs.isEmpty();
 			LOG.trace("Outputs: " + processedOutputs);
 			
 			// attention
-			updated |= attentionAttenuator.act(interceptedEvents,
-					processedOutputs.stream().map(po -> po.output).collect(Collectors.toList()));
+			updated |= attentionAttenuator.act(interceptedEvents, processedOutputs);
 
 			// tick cleanup: consume input queues
 			// (has to go here, because we'll next push data onto the consciousFeedbackStream and want that to be feed back into the next loop)
@@ -233,38 +233,6 @@ public class Emulator {
 		trigger();
 		if (runIfNotRunning) {
 			controlLoop();
-		}
-	}
-	
-	/**
-	 * Wrapper around the result from a processor.
-	 * 
-	 * Note: in the future, when processors are created at runtime, there will be more instances
-	 * of the same class, and they'll need something else to identify them.
-	 */
-	// TODO also want to know which event(s) was the trigger for the processor
-	private static class ProcessedOutput {
-		// processor which produced the output
-		private final Processor processor;
-		
-		// output from processor
-		private final List<Event> output;
-
-		public ProcessedOutput(Processor processor, List<Event> output) {
-			this.processor = processor;
-			this.output = output;
-		}
-
-		public String toString() {
-			if (output.isEmpty()) {
-				return String.format("%s:{0}", processor.getClass().getSimpleName());
-			}
-			else {
-				return String.format("%s:{%d @ %f => %s}", processor.getClass().getSimpleName(),
-					output.size(),
-					output.stream().reduce(Events.strongest()).map(e -> e.strength()).orElse(null),
-					output.stream().map(e -> e.getClass().getSimpleName()).collect(Collectors.toList()));
-			}
 		}
 	}
 }

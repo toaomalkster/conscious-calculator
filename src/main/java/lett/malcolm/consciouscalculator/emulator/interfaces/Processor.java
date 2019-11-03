@@ -38,6 +38,9 @@ public interface Processor {
 	 * The first returned event is considered the main one. When the attenuator decides which
 	 * processor's output to process, it only examines the first event.
 	 * 
+	 * Events produced by processors are only expected to have references, tags, and data assigned.
+	 * GUIDs and timestamps are automatically applied once the events are accepted into the emulation.
+	 * 
 	 * @param events events that have been extracted from incoming inputs, if any
 	 * @param memory current working memory
 	 * @return a generated event that is offered up for potential attention,
