@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interfaces;
 
-
 import java.util.Queue;
 
 /**
@@ -43,6 +42,13 @@ public interface InputInterceptor {
 	
 	/**
 	 * Extract meaningful events, if it understands the incoming data.
+	 * 
+	 * Events produced by interceptors are expected to have strength, references, tags, and data assigned.
+	 * The emitted strength should be a confidence level relative to the interceptor itself, in the range 0.0 to 1.0.
+	 * Interceptors should <em>not</em> not consider relative strengths to other interceptors or processors.
+	 * 
+	 * Globally relative event strength, GUID, and timestamp are automatically applied once the events are
+	 * accepted into the emulation.
 	 * @param senseDesignator which sense this data came from
 	 * @param stream stream of data
 	 * @return new event, or nothing

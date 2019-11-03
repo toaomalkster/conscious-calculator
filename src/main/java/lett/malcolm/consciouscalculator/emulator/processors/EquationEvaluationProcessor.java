@@ -30,7 +30,6 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact;
-import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
 import lett.malcolm.consciouscalculator.emulator.facts.EquationOperatorFact.EquationOperatorSymbol;
 import lett.malcolm.consciouscalculator.emulator.facts.NumberFact;
 import lett.malcolm.consciouscalculator.emulator.facts.OperatorFact;
@@ -39,6 +38,7 @@ import lett.malcolm.consciouscalculator.emulator.facts.StatementTruthFact;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Fact;
+import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptorResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 
@@ -84,7 +84,7 @@ public class EquationEvaluationProcessor implements Processor {
 	 * @return an updated event
 	 */
 	@Override
-	public List<Event> process(List<Event> events, WorkingMemory memory) {
+	public List<Event> process(List<InputInterceptorResult> events, WorkingMemory memory) {
 		for (Event memoryItem: memory.all()) {
 			if (accepts(memoryItem)) {
 				try {

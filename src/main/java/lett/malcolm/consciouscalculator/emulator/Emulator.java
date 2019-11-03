@@ -35,9 +35,10 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.ActionAwareProcessor
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptorResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
-import lett.malcolm.consciouscalculator.emulator.interfaces.ProcessorOutput;
+import lett.malcolm.consciouscalculator.emulator.interfaces.ProcessorResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.STMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 import lett.malcolm.consciouscalculator.emulator.processors.EquationEvaluationProcessor;
@@ -152,8 +153,8 @@ public class Emulator {
 	private void controlLoop() {
 		int ticksWithoutUpdates = 0;
 		while (triggerQueue.poll() != null) {
-			List<Event> interceptedEvents = new ArrayList<>();
-			List<ProcessorOutput> processedOutputs = new ArrayList<>();
+			List<InputInterceptorResult> interceptedResults = new ArrayList<>();
+			List<ProcessorResult> processedResults = new ArrayList<>();
 			boolean updated = false;
 			
 			// input intercepting
@@ -162,24 +163,24 @@ public class Emulator {
 				Queue<Object> stream = new LinkedList<Object>(getInputStream(interceptor.inputDesignator()));
 				Event event = interceptor.intercept(stream);
 				if (event != null) {
-					interceptedEvents.add(event);
+					interceptedResults.add(new InputInterceptorResult(interceptor, event));
 				}
 			}
-			updated |= !interceptedEvents.isEmpty();
+			updated |= !interceptedResults.isEmpty();
 			
 			// processing
 			for (Processor processor: processors) {
-				interceptedEvents = Collections.unmodifiableList(interceptedEvents);
-				List<Event> eventSet = processor.process(interceptedEvents, workingMemory);
+				interceptedResults = Collections.unmodifiableList(interceptedResults);
+				List<Event> eventSet = processor.process(interceptedResults, workingMemory);
 				if (eventSet != null && !eventSet.isEmpty()) {
-					processedOutputs.add(new ProcessorOutput(processor, eventSet));
+					processedResults.add(new ProcessorResult(processor, eventSet));
 				}
 			}
-			updated |= !processedOutputs.isEmpty();
-			LOG.trace("Outputs: " + processedOutputs);
+			updated |= !processedResults.isEmpty();
+			LOG.trace("Outputs: " + processedResults);
 			
 			// attention
-			updated |= attentionAttenuator.act(interceptedEvents, processedOutputs);
+			updated |= attentionAttenuator.act(interceptedResults, processedResults);
 
 			// tick cleanup: consume input queues
 			// (has to go here, because we'll next push data onto the consciousFeedbackStream and want that to be feed back into the next loop)

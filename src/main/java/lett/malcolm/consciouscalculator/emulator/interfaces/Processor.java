@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interfaces;
 
-
 import java.util.List;
 
 import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
@@ -38,13 +37,18 @@ public interface Processor {
 	 * The first returned event is considered the main one. When the attenuator decides which
 	 * processor's output to process, it only examines the first event.
 	 * 
-	 * Events produced by processors are only expected to have references, tags, and data assigned.
-	 * GUIDs and timestamps are automatically applied once the events are accepted into the emulation.
+	 * Events produced by processors are expected to have strength, references, tags, and data assigned.
+	 * The emitted strength should be a confidence level relative to the processor itself, in the range 0.0 to 1.0.
+	 * Processors should <em>not</em> not consider relative strengths to other processors, nor of the trigger
+	 * event.
 	 * 
-	 * @param events events that have been extracted from incoming inputs, if any
+	 * Globally relative event strength, GUID, and timestamp are automatically applied once the events are
+	 * accepted into the emulation.
+	 * 
+	 * @param inputInterceptorOutputs events that have been extracted from incoming inputs, if any
 	 * @param memory current working memory
 	 * @return a generated event that is offered up for potential attention,
 	 *   and potentially other events that need to be updated (eg: with status flag changes)
 	 */
-	public List<Event> process(List<Event> events, WorkingMemory memory);
+	public List<Event> process(List<InputInterceptorResult> inputInterceptorResults, WorkingMemory memory);
 }
