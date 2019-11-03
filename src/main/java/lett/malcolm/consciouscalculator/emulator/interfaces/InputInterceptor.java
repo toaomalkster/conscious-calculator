@@ -32,7 +32,7 @@ import java.util.Queue;
  * 
  * @author Malcolm Lett
  */
-public interface InputInterceptor {
+public interface InputInterceptor extends EventEmitter {
 	/**
 	 * Identifies which input this interceptor should be bound to.
 	 * Interceptors only receive data from one input stream.

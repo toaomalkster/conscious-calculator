@@ -32,7 +32,7 @@ import lett.malcolm.consciouscalculator.emulator.WorkingMemory;
  * 
  * @author Malcolm Lett
  */
-public interface Processor {
+public interface Processor extends EventEmitter {
 	/**
 	 * The first returned event is considered the main one. When the attenuator decides which
 	 * processor's output to process, it only examines the first event.
@@ -50,5 +50,5 @@ public interface Processor {
 	 * @return a generated event that is offered up for potential attention,
 	 *   and potentially other events that need to be updated (eg: with status flag changes)
 	 */
-	public List<Event> process(List<InputInterceptorResult> inputInterceptorResults, WorkingMemory memory);
+	public List<Event> process(List<EventsResult> inputInterceptorResults, WorkingMemory memory);
 }

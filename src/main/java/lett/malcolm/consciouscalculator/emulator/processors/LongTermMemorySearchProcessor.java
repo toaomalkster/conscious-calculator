@@ -31,7 +31,7 @@ import lett.malcolm.consciouscalculator.emulator.events.MemorySearchRequestEvent
 import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
-import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptorResult;
+import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
@@ -56,7 +56,7 @@ public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcess
 	}
 
 	@Override
-	public List<Event> process(List<InputInterceptorResult> events, WorkingMemory memory) {
+	public List<Event> process(List<EventsResult> inputInterceptorResults, WorkingMemory memory) {
 		for (Event memoryItem: memory.all()) {
 			if (accepts(memoryItem)) {
 				Object referenceData = ((MemorySearchRequestEvent) memoryItem).getReferenceData();

@@ -31,7 +31,7 @@ import lett.malcolm.consciouscalculator.emulator.facts.EquationFact;
 import lett.malcolm.consciouscalculator.emulator.facts.ExpressionFact;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
-import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptorResult;
+import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 
@@ -50,7 +50,7 @@ public class ExpressionResponseProcessor implements Processor {
 	 * TODO flag original REQUEST as COMPLETE
 	 */
 	@Override
-	public List<Event> process(List<InputInterceptorResult> events, WorkingMemory memory) {
+	public List<Event> process(List<EventsResult> inputInterceptorResults, WorkingMemory memory) {
 		for (Event memoryItem: memory.all()) {
 			if (accepts(memoryItem) && hasTiesBackToARequest(memoryItem, memory)) {
 				Percept result = ((PerceptEvent) memoryItem).data();

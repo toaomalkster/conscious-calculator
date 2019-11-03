@@ -35,10 +35,10 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.ActionAwareProcessor
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
-import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptorResult;
+import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
-import lett.malcolm.consciouscalculator.emulator.interfaces.ProcessorResult;
+import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.STMAwareProcessor;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 import lett.malcolm.consciouscalculator.emulator.processors.EquationEvaluationProcessor;
@@ -153,8 +153,8 @@ public class Emulator {
 	private void controlLoop() {
 		int ticksWithoutUpdates = 0;
 		while (triggerQueue.poll() != null) {
-			List<InputInterceptorResult> interceptedResults = new ArrayList<>();
-			List<ProcessorResult> processedResults = new ArrayList<>();
+			List<EventsResult> interceptedResults = new ArrayList<>();
+			List<EventsResult> processedResults = new ArrayList<>();
 			boolean updated = false;
 			
 			// input intercepting
@@ -163,7 +163,7 @@ public class Emulator {
 				Queue<Object> stream = new LinkedList<Object>(getInputStream(interceptor.inputDesignator()));
 				Event event = interceptor.intercept(stream);
 				if (event != null) {
-					interceptedResults.add(new InputInterceptorResult(interceptor, event));
+					interceptedResults.add(new EventsResult(interceptor, event));
 				}
 			}
 			updated |= !interceptedResults.isEmpty();
@@ -173,7 +173,7 @@ public class Emulator {
 				interceptedResults = Collections.unmodifiableList(interceptedResults);
 				List<Event> eventSet = processor.process(interceptedResults, workingMemory);
 				if (eventSet != null && !eventSet.isEmpty()) {
-					processedResults.add(new ProcessorResult(processor, eventSet));
+					processedResults.add(new EventsResult(processor, eventSet));
 				}
 			}
 			updated |= !processedResults.isEmpty();
