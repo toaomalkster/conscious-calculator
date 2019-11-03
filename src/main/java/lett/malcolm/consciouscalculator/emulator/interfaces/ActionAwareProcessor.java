@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interfaces;
 
-
 import java.util.Queue;
 
 /**

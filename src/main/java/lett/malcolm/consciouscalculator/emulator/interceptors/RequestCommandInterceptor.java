@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interceptors;
 
-import java.time.Clock;
 import java.util.Queue;
 
 import lett.malcolm.consciouscalculator.emulator.events.TextRequestEvent;
@@ -31,12 +30,6 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
  * @author Malcolm Lett
  */
 public class RequestCommandInterceptor implements InputInterceptor {
-	private Clock clock;
-	
-	public RequestCommandInterceptor() {
-		this.clock = clock;
-	}
-	
 	@Override
 	public InputDesignator inputDesignator() {
 		return InputDesignator.COMMAND;
@@ -48,7 +41,7 @@ public class RequestCommandInterceptor implements InputInterceptor {
 			String data = (String) obj;
 			
 			Event event = new TextRequestEvent(data);
-			event.setStrength(0.5);
+			event.setStrength(1.0);
 			return event;
 		}
 		return null;

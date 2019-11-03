@@ -63,7 +63,7 @@ public class EventsResult {
 		}
 	}
 
-	public EventEmitter processor() {
+	public EventEmitter emitter() {
 		return emitter;
 	}
 

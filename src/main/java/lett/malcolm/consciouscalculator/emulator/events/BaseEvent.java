@@ -34,10 +34,13 @@ import lett.malcolm.consciouscalculator.utils.QuantityUtils;
  * @author Malcolm Lett
  */
 abstract class BaseEvent implements Event {
-	private double strength = 0;
-	//private int size = 1; // dynamically calculated in size()
+	/** All events default to strength 1.0 unless changed */
+	private double strength = 1.0;
+	
 	private Set<EventTag> tags = new HashSet<>();
+	
 	private Set<String> references = new HashSet<>();
+	
 	private Object data;
 	
 	// only set once event accepted

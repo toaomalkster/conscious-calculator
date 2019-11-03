@@ -90,6 +90,15 @@ public class WorkingMemory {
 	}
 	
 	/**
+	 * Indicates whether the working memory contains an event with the given guid.
+	 * @param guid
+	 * @return
+	 */
+	public boolean contains(String guid) {
+		return contents.stream().anyMatch(e -> e.guid().equals(guid));
+	}
+	
+	/**
 	 * Callers MUST NOT modify the returned set.
 	 * @return all memory items, in priority order of navigation
 	 */

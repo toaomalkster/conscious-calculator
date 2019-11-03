@@ -18,8 +18,10 @@
 package lett.malcolm.consciouscalculator.emulator;
 
 import java.time.Clock;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,8 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import lett.malcolm.consciouscalculator.emulator.events.ActionEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
+import lett.malcolm.consciouscalculator.emulator.interfaces.EventEmitter;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
-import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
 
 /**
@@ -39,13 +41,15 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
 public class AttentionAttenuator {
 	private static final Logger LOG = LoggerFactory.getLogger(AttentionAttenuator.class);
 	
+	private static final double DEFAULT_WEIGHTING = 0.5;
+	
 	private Clock clock;
 	private Queue<? extends Object> commandStream;
 	private Queue<? extends Object> consciousFeedbackStream;
 	private WorkingMemory workingMemory;
 	
 	// per-interceptor/processor weightings
-	// TODO
+	private Map<EventEmitter, Double> emitterWeightings = new HashMap<>();
 	
 	public AttentionAttenuator(
 			Clock clock,
@@ -55,6 +59,22 @@ public class AttentionAttenuator {
 		this.commandStream = commandStream;
 		this.consciousFeedbackStream = consciousFeedbackStream;
 		this.workingMemory = workingMemory;
+	}
+	
+	/**
+	 * Sets relative weight of an emitter, as compared to the relative weights of other emitters.
+	 * @param emitter
+	 * @param weighting relative weight in range 0.0 to 1.0; default weight assumed if null
+	 * @return this instance, for method chaining
+	 */
+	public AttentionAttenuator withWeighting(EventEmitter emitter, Double weighting) {
+		if (weighting == null) {
+			emitterWeightings.remove(emitter);
+		}
+		else {
+			emitterWeightings.put(emitter, weighting);
+		}
+		return this;
 	}
 
 	/**
@@ -94,34 +114,51 @@ public class AttentionAttenuator {
 		}
 		
 		// primary
-		List<Event> chosenEventSet = null;
-		for (EventsResult processorResult: processorResults) {
-			if (!processorResult.emittedEvents().isEmpty()) {
-				if (chosenEventSet == null || strengthOf(processorResult.emittedEvents()) > strengthOf(chosenEventSet)) {
-					chosenEventSet = processorResult.emittedEvents();
+		EventsResult chosenResult = null;
+		for (EventsResult result: processorResults) {
+			if (!result.emittedEvents().isEmpty()) {
+				if (chosenResult == null || strengthOf(result) > strengthOf(chosenResult)) {
+					chosenResult = result;
 				}
 			}
 		}
 
 		// secondary: intercepted events, only pick if strength trumps what was found above 
-		for (EventsResult interceptorResult: interceptorResults) {
-			if (!interceptorResult.emittedEvents().isEmpty()) {
-				if (chosenEventSet == null || strengthOf(interceptorResult.emittedEvents()) > strengthOf(chosenEventSet)) {
-					chosenEventSet = interceptorResult.emittedEvents();
+		for (EventsResult result: interceptorResults) {
+			if (!result.emittedEvents().isEmpty()) {
+				if (chosenResult == null || strengthOf(result) > strengthOf(chosenResult)) {
+					chosenResult = result;
 				}
 			}
 		}
 		
 		// emit events
-		if (chosenEventSet != null) {
+		if (chosenResult != null) {
 			// prepare for emitting
-			chosenEventSet = chosenEventSet.stream().map(this::prepareNewEventForUse).collect(Collectors.toList());
+			// TODO affect scaling by strength of trigger event too
+			double scalingFactor = getStrengthScalingFactor(chosenResult.emitter());
+			List<Event> events = chosenResult.emittedEvents().stream()
+					.map(e -> prepareNewEventForUse(scalingFactor, e))
+					.collect(Collectors.toList());
 
 			// adds or update into working memory
-			chosenEventSet.forEach(workingMemory::store);
+			events.forEach(workingMemory::store);
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Implementation note: the result of this is only used in comparison tests.
+	 * Thus it doesn't have to be an accurate global value...what this means
+	 * is that we don't need to call {@link #getStrengthScalingFactor(EventEmitter)}.
+	 * Because: "a/ave  <  b/ave" is the same as "a < b".
+	 * @param result
+	 * @return
+	 */
+	// TODO affect scaling by strength of trigger event too
+	private double strengthOf(EventsResult result) {
+		return getWeight(result.emitter()) * strengthOf(result.emittedEvents());
 	}
 	
 	private double strengthOf(List<Event> eventSet) {
@@ -137,10 +174,49 @@ public class AttentionAttenuator {
 	 * @return event updated event (possibly after cloning)
 	 */
 	// TODO may need to be re-used elsewhere
-	private Event prepareNewEventForUse(Event event) {
-		event.setGuid(UUID.randomUUID().toString());
-		event.setTimestamp(clock, clock.instant());
+	private Event prepareNewEventForUse(double scalingFactor, Event event) {
+		// updates to existing events
+		// - don't affect strength
+		// - keep guid -- required in order to update existing event
+		// - keep timestamp
+		if (event.guid() != null && workingMemory.contains(event.guid())) {
+			// nothing to do
+		}
+		
+		// new events
+		else {
+			double suggestedStrength = event.strength();
+			
+			event.setGuid(UUID.randomUUID().toString());
+			event.setTimestamp(clock, clock.instant());
+			event.setStrength(suggestedStrength * scalingFactor);
+		}
 		return event;
+	}
+	
+	/**
+	 * Identifies the weight of the provided emitted, relative to all others.
+	 * Returns a scaling factor based on those weightings.
+	 * @param emitter
+	 * @return value in range 0.0 to +inf
+	 */
+	// TODO probably only do within emitter type: processor vs interceptor.
+	private double getStrengthScalingFactor(EventEmitter emitter) {
+		// short-cut if no weightings configured
+		if (emitterWeightings.isEmpty()) {
+			// no scaling factor
+			return 1.0;
+		}
+
+		double ave = emitterWeightings.values().stream().mapToDouble(v -> v).sum() /
+				(double) emitterWeightings.size();
+		
+		return getWeight(emitter) / ave;
+	}
+	
+	private double getWeight(EventEmitter emitter) {
+		Double weight = emitterWeightings.get(emitter);
+		return (weight == null) ? DEFAULT_WEIGHTING : weight;
 	}
 	
 }

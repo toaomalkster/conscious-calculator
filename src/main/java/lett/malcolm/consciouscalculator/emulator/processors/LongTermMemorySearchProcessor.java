@@ -32,7 +32,7 @@ import lett.malcolm.consciouscalculator.emulator.events.PerceptEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
-import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.LongTermMemoryAware;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Percept;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 
@@ -45,7 +45,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
  * @author Malcolm Lett
  */
 // TODO do one for ShortTermMemory too
-public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcessor {
+public class LongTermMemorySearchProcessor implements Processor, LongTermMemoryAware {
 	private static final Logger LOG = LoggerFactory.getLogger(LongTermMemorySearchProcessor.class);
 
 	private LongTermMemory longTermMemory;

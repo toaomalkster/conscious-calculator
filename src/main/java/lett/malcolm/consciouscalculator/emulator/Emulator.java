@@ -36,10 +36,10 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
-import lett.malcolm.consciouscalculator.emulator.interfaces.LTMAwareProcessor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.LongTermMemoryAware;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventsResult;
-import lett.malcolm.consciouscalculator.emulator.interfaces.STMAwareProcessor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.ShortTermMemoryAware;
 import lett.malcolm.consciouscalculator.emulator.lowlevel.Trigger;
 import lett.malcolm.consciouscalculator.emulator.processors.EquationEvaluationProcessor;
 import lett.malcolm.consciouscalculator.emulator.processors.ExpressionAndEquationParseProcessor;
@@ -102,36 +102,46 @@ public class Emulator {
 		this.attentionAttenuator = new AttentionAttenuator(clock, commandStream,
 				consciousFeedbackStream, workingMemory);
 		this.consciousFeedbacker = new ConsciousFeedbacker(workingMemory);
-		this.consciousFeedbackToSTMInterceptor = new ConsciousFeedbackToSTMInterceptor(clock, shortTermMemory);
+		this.consciousFeedbackToSTMInterceptor = new ConsciousFeedbackToSTMInterceptor();
 		
 		// TODO discover interceptors and processors through class-path scanning
 		this.inputInterceptors = new ArrayList<>();
 		this.processors = new ArrayList<>();
 		
-		inputInterceptors.add(consciousFeedbackToSTMInterceptor);
-		inputInterceptors.add(new RequestCommandInterceptor());
-		inputInterceptors.add(new StuckThoughtInterceptor());
-		processors.add(new ExpressionEvaluationProcessor());
-		processors.add(new EquationEvaluationProcessor());
-		processors.add(new ExpressionAndEquationParseProcessor());
-		processors.add(new ExpressionResponseProcessor());
-		processors.add(new SpeakActionProcessor());
-		processors.add(new FindMatchingConceptProcessor());
-		processors.add(new LongTermMemorySearchProcessor());
+		addInputInterceptor(0.5, consciousFeedbackToSTMInterceptor);
+		addInputInterceptor(0.5, new RequestCommandInterceptor());
+		addInputInterceptor(0.5, new StuckThoughtInterceptor());
+		addProcessor(0.5, new ExpressionEvaluationProcessor());
+		addProcessor(0.5, new EquationEvaluationProcessor());
+		addProcessor(0.5, new ExpressionAndEquationParseProcessor());
+		addProcessor(0.5, new ExpressionResponseProcessor());
+		addProcessor(0.5, new SpeakActionProcessor());
+		addProcessor(0.5, new FindMatchingConceptProcessor());
+		addProcessor(0.5, new LongTermMemorySearchProcessor());
 		
 		for (Processor processor: processors) {
 			if (processor instanceof ActionAwareProcessor) {
 				((ActionAwareProcessor) processor).setOutputStream(outputStream);
 			}
-			if (processor instanceof STMAwareProcessor) {
-				((STMAwareProcessor) processor).setSTM(shortTermMemory);
+			if (processor instanceof ShortTermMemoryAware) {
+				((ShortTermMemoryAware) processor).setSTM(shortTermMemory);
 			}
-			if (processor instanceof LTMAwareProcessor) {
-				((LTMAwareProcessor) processor).setLTM(longTermMemory);
+			if (processor instanceof LongTermMemoryAware) {
+				((LongTermMemoryAware) processor).setLTM(longTermMemory);
 			}
 		}
 	}
+	
+	private void addInputInterceptor(double weight, InputInterceptor interceptor) {
+		attentionAttenuator.withWeighting(interceptor, weight);
+		inputInterceptors.add(interceptor);
+	}
 
+	private void addProcessor(double weight, Processor processor) {
+		attentionAttenuator.withWeighting(processor, weight);
+		processors.add(processor);
+	}
+	
 	/**
 	 * Send a signal on the 'command' input.
 	 * @param text

@@ -17,15 +17,16 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interfaces;
 
-
 import lett.malcolm.consciouscalculator.emulator.ShortTermMemory;
 
 /**
- * Marks processors that require access to Short Term Memory.
+ * Marks components that require access to Short Term Memory.
+ * 
+ * Currently can only be applied to EventEmitters.
  * 
  * @author Malcolm Lett
  */
-public interface STMAwareProcessor extends Processor {
+public interface ShortTermMemoryAware extends EventEmitter {
 
 	public void setSTM(ShortTermMemory memory);
 }

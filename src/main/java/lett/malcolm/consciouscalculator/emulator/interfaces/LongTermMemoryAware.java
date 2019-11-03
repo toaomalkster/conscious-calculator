@@ -21,11 +21,13 @@ package lett.malcolm.consciouscalculator.emulator.interfaces;
 import lett.malcolm.consciouscalculator.emulator.LongTermMemory;
 
 /**
- * Marks processors that require access to Long Term Memory.
+ * Marks components that require access to Long Term Memory.
+ * 
+ * Currently can only be applied to EventEmitters.
  * 
  * @author Malcolm Lett
  */
-public interface LTMAwareProcessor extends Processor {
+public interface LongTermMemoryAware extends EventEmitter {
 
 	public void setLTM(LongTermMemory memory);
 }

@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interceptors;
 
-import java.time.Clock;
 import java.util.Queue;
 
 import lett.malcolm.consciouscalculator.emulator.ConsciousFeedbacker.ConsciousState;
@@ -27,6 +26,7 @@ import lett.malcolm.consciouscalculator.emulator.events.MemoryEvent;
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputDesignator;
 import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
+import lett.malcolm.consciouscalculator.emulator.interfaces.ShortTermMemoryAware;
 
 /**
  * Special purpose interceptor that detects each new event coming from conscious feedback,
@@ -51,19 +51,18 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
  * original data and turn it into a current thought.
  * ie: extract "3+5" expression from a MemoryEvent.
  */
-public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
-	private Clock clock;
+public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor, ShortTermMemoryAware {
 	private ShortTermMemory shortTermMemory;
 	
 	// state
 	private boolean first = true;
 	private ConsciousState prevState = null;
 	
-	public ConsciousFeedbackToSTMInterceptor(Clock clock, ShortTermMemory shortTermMemory) {
-		this.clock = clock;
-		this.shortTermMemory = shortTermMemory;
+	@Override
+	public void setSTM(ShortTermMemory memory) {
+		this.shortTermMemory = memory;
 	}
-	
+
 	@Override
 	public InputDesignator inputDesignator() {
 		return InputDesignator.CONSCIOUS_FEEDBACK;
