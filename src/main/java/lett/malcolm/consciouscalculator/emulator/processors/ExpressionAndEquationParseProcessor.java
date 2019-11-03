@@ -17,8 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,12 +56,6 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 public class ExpressionAndEquationParseProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(ExpressionAndEquationParseProcessor.class);
 	
-	private Clock clock;
-	
-	public ExpressionAndEquationParseProcessor(Clock clock) {
-		this.clock = clock;
-	}
-
 	/**
 	 * Only looks at working memory, and issues the first parsed expression it finds.
 	 * 
@@ -96,7 +88,7 @@ public class ExpressionAndEquationParseProcessor implements Processor {
 				}
 				
 				if (expr != null) {
-					PerceptEvent exprEvent = new PerceptEvent(clock, expr);
+					PerceptEvent exprEvent = new PerceptEvent(expr);
 					//exprEvent.tags().addAll(memoryItem.tags());
 					if (confidence == Confidence.STRONG) {
 						exprEvent.setStrength(memoryItem.strength() + 0.01);

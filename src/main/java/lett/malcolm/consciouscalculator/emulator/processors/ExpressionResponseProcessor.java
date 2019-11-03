@@ -17,8 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-
-import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -48,12 +46,6 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 public class ExpressionResponseProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(ExpressionResponseProcessor.class);
 
-	private Clock clock;
-	
-	public ExpressionResponseProcessor(Clock clock) {
-		this.clock = clock;
-	}
-
 	/**
 	 * TODO flag original REQUEST as COMPLETE
 	 */
@@ -65,7 +57,7 @@ public class ExpressionResponseProcessor implements Processor {
 				try {
 					String exprText = evaluate(result);
 					
-					Event event = new ActionEvent(clock, exprText);
+					Event event = new ActionEvent(exprText);
 					event.tags().addAll(memoryItem.tags());
 					event.setStrength(memoryItem.strength() + 0.01);
 					

@@ -17,13 +17,11 @@
  */
 package lett.malcolm.consciouscalculator.emulator.events;
 
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
@@ -36,19 +34,18 @@ import lett.malcolm.consciouscalculator.utils.QuantityUtils;
  * @author Malcolm Lett
  */
 abstract class BaseEvent implements Event {
-	private String guid;
 	private double strength = 0;
-	private Instant timestamp;
 	//private int size = 1; // dynamically calculated in size()
 	private Set<EventTag> tags = new HashSet<>();
 	private Set<String> references = new HashSet<>();
 	private Object data;
+	
+	// only set once event accepted
+	private String guid;
 	private Clock clock;
+	private Instant timestamp;
 			
-	public BaseEvent(Clock clock) {
-		this.clock = clock;
-		this.guid = UUID.randomUUID().toString();
-		this.timestamp = clock.instant();
+	public BaseEvent() {
 	}
 
 	@Override
@@ -70,11 +67,20 @@ abstract class BaseEvent implements Event {
 		buf.append(getClass().getSimpleName()).append("{");
 		
 		// guid
-		buf.append(Events.toShortGuid(guid())).append(",");
+		if (guid() != null) {
+			buf.append(Events.toShortGuid(guid())).append(",");
+		}
 		
 		// age
-		long age = Duration.between(timestamp, clock.instant()).toMillis();
-		buf.append(QuantityUtils.toShortMillisString(age)).append(",");
+		if (timestamp != null) {
+			if (clock == null) {
+				buf.append(timestamp).append(",");
+			}
+			else {
+				long age = Duration.between(timestamp, clock.instant()).toMillis();
+				buf.append(QuantityUtils.toShortMillisString(age)).append(",");
+			}
+		}
 		
 		// strength
 		buf.append(String.format("%.03f", strength)).append(",");
@@ -95,7 +101,6 @@ abstract class BaseEvent implements Event {
 		buf.append("}");
 		return buf.toString();
 	}
-
 	
 	@Override
 	public String guid() {
@@ -130,18 +135,33 @@ abstract class BaseEvent implements Event {
 		return data;
 	}
 
+	@Override
 	public void setStrength(double strength) {
 		this.strength = strength;
 	}
 
+	@Override
 	public void setTimestamp(Instant timestamp) {
 		this.timestamp = timestamp;
 	}
 
+	@Override
+	public void setTimestamp(Clock clock) {
+		setTimestamp(clock, clock.instant());
+	}
+	
+	@Override
+	public void setTimestamp(Clock clock, Instant timestamp) {
+		this.timestamp = timestamp;
+		this.clock = clock;
+	}
+
+	@Override
 	public void setGuid(String guid) {
 		this.guid = guid;
 	}
 
+	@Override
 	public void setTags(Set<EventTag> tags) {
 		if (tags == null) {
 			tags = new HashSet<>();
@@ -149,6 +169,7 @@ abstract class BaseEvent implements Event {
 		this.tags = tags;
 	}
 
+	@Override
 	public void setReferences(Set<String> references) {
 		if (references == null) {
 			references = new HashSet<>();
@@ -156,6 +177,7 @@ abstract class BaseEvent implements Event {
 		this.references = references;
 	}
 	
+	@Override
 	public void setData(Object data) {
 		DataRules.assertValid(data);
 		this.data = data;

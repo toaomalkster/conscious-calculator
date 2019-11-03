@@ -17,8 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interceptors;
 
-
-import java.time.Clock;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -47,15 +45,9 @@ public class StuckThoughtInterceptor implements InputInterceptor {
 	// including incoming state
 	private static final int THRESHOLD_TICK_COUNT = 3;
 	
-	private Clock clock;
-	
 	// state
 	private Deque<ConsciousState> lastFewTicks = new LinkedList<>();
 	private Event lastStuckEvent = null;
-	
-	public StuckThoughtInterceptor(Clock clock) {
-		this.clock = clock;
-	}
 	
 	@Override
 	public InputDesignator inputDesignator() {
@@ -78,7 +70,7 @@ public class StuckThoughtInterceptor implements InputInterceptor {
 					// don't trigger when top event is a StuckThoughtEvent itself,
 					// or when it's the same stuck event as already flagged
 					if (!(state.getTop() instanceof StuckThoughtEvent)) {
-						Event event = new StuckThoughtEvent(clock, state.getTop().guid());
+						Event event = new StuckThoughtEvent(state.getTop().guid());
 						event.setStrength(0.6);
 						
 						if (canEmit(event)) {

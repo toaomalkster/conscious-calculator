@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interceptors;
 
-
 import java.time.Clock;
 import java.util.Queue;
 
@@ -99,7 +98,7 @@ public class ConsciousFeedbackToSTMInterceptor implements InputInterceptor {
 	private Event convertToEvent(ConsciousState state) {
 		Event topEvent = state.getTop();
 		
-		Event result = new MemoryEvent(clock,
+		Event result = new MemoryEvent(
 				topEvent.getClass().getSimpleName(),
 				DataRules.clone(topEvent.data()));
 		result.setStrength(topEvent.strength());

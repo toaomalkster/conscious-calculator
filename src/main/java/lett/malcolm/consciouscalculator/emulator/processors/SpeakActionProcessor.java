@@ -17,8 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -50,13 +48,8 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 public class SpeakActionProcessor implements Processor, ActionAwareProcessor {
 	private static final Logger LOG = LoggerFactory.getLogger(SpeakActionProcessor.class);
 	
-	private Clock clock;
 	private Queue<String> outputStream;
 	
-	public SpeakActionProcessor(Clock clock) {
-		this.clock = clock;
-	}
-
 	@Override
 	public void setOutputStream(Queue<String> stream) {
 		this.outputStream = stream;

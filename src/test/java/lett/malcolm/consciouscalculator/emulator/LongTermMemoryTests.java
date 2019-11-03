@@ -75,7 +75,7 @@ public class LongTermMemoryTests {
 	// found: [PerceptEvent{NumberFact,20ms,0.000,Percept{NumberFact,ref=NumberFact.Name,null}}]
 	@Test
 	public void findsNumberFactByEvent() {
-		Event refEvent = new PerceptEvent(clock, new Percept(NumberFact.GUID, 3));
+		Event refEvent = new PerceptEvent(new Percept(NumberFact.GUID, 3));
 		
 		List<Event> found = memory.search(refEvent);
 		//System.out.println(found);
@@ -93,7 +93,7 @@ public class LongTermMemoryTests {
 
 	@Test
 	public void findsExpressionAndOperatorAndNumberFactsByEvent() {
-		Event refEvent = new PerceptEvent(clock, new Percept(ExpressionFact.GUID, listOf(
+		Event refEvent = new PerceptEvent(new Percept(ExpressionFact.GUID, listOf(
 				new Percept(NumberFact.GUID, 3),
 				new Percept(OperatorFact.GUID, "+"),
 				new Percept(NumberFact.GUID, 5))));
@@ -109,7 +109,7 @@ public class LongTermMemoryTests {
 	
 	@Test
 	public void findsOnlyDirectConceptMatchesByEvent() {
-		Event refEvent = new PerceptEvent(clock, new Percept(ExpressionFact.GUID, listOf(
+		Event refEvent = new PerceptEvent(new Percept(ExpressionFact.GUID, listOf(
 				new Percept(NumberFact.GUID, 3),
 				new Percept(OperatorFact.GUID, "+"),
 				new Percept(NumberFact.GUID, 5))));

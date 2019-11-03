@@ -17,8 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-
-import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -58,12 +56,6 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 public class ExpressionEvaluationProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(ExpressionEvaluationProcessor.class);
 
-	private Clock clock;
-	
-	public ExpressionEvaluationProcessor(Clock clock) {
-		this.clock = clock;
-	}
-
 	/**
 	 * Only looks at working memory, and evaluates the expression it finds,
 	 * but only if the expression hasn't already been evaluated.
@@ -86,7 +78,7 @@ public class ExpressionEvaluationProcessor implements Processor {
 				try {
 					Percept result = evaluate(((PerceptEvent) memoryItem).data());
 					if (result != null) {
-						PerceptEvent resultEvent = new PerceptEvent(clock, result);
+						PerceptEvent resultEvent = new PerceptEvent(result);
 						//resultEvent.tags().addAll(memoryItem.tags());
 						resultEvent.tags().add(EventTag.CONCLUSION);
 						resultEvent.setStrength(memoryItem.strength() + 0.01);

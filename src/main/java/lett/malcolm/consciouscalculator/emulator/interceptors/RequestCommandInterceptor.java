@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.interceptors;
 
-
 import java.time.Clock;
 import java.util.Queue;
 
@@ -34,7 +33,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.InputInterceptor;
 public class RequestCommandInterceptor implements InputInterceptor {
 	private Clock clock;
 	
-	public RequestCommandInterceptor(Clock clock) {
+	public RequestCommandInterceptor() {
 		this.clock = clock;
 	}
 	
@@ -48,7 +47,7 @@ public class RequestCommandInterceptor implements InputInterceptor {
 		for (Object obj: stream) {
 			String data = (String) obj;
 			
-			Event event = new TextRequestEvent(clock, data);
+			Event event = new TextRequestEvent(data);
 			event.setStrength(0.5);
 			return event;
 		}

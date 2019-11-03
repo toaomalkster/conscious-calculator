@@ -389,7 +389,8 @@ public class LongTermMemory {
 	}
 	
 	private static Event wrapAsPerceptEvent(Clock clock, Percept percept) {
-		Event event = new PerceptEvent(clock, percept);
+		Event event = new PerceptEvent(percept);
+		event.setTimestamp(clock);
 		event.setGuid(percept.guid());
 		return event;
 	}

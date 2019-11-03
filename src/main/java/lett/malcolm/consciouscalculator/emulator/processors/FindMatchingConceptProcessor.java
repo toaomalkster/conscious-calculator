@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,12 +58,6 @@ import lett.malcolm.consciouscalculator.utils.Events;
 public class FindMatchingConceptProcessor implements Processor {
 	private static final Logger LOG = LoggerFactory.getLogger(FindMatchingConceptProcessor.class);
 
-	private Clock clock;
-	
-	public FindMatchingConceptProcessor(Clock clock) {
-		this.clock = clock;
-	}
-
 	/**
 	 * Operates against two events:
 	 * - the 'trigger' -- a StuckThoughtEvent
@@ -89,7 +82,7 @@ public class FindMatchingConceptProcessor implements Processor {
 				// (TODO if already present and not responded to yet and there is no corresponding StuckThoughtEvent, then do nothing)
 				// (fluent API: emit(new Event(), ifNoUnprocessedEquivalentsPresent(), ...??)
 				if (target != null && concepts.isEmpty()) {
-					Event event = new MemorySearchRequestEvent(clock, target.data());
+					Event event = new MemorySearchRequestEvent(target.data());
 					event.setStrength(target.strength() + 0.01);
 					event.references().add(target.guid());
 					

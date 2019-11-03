@@ -17,8 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.events;
 
-import java.time.Clock;
-
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 /**
@@ -27,8 +25,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
  * @author Malcolm Lett
  */
 public class MemorySearchRequestEvent extends BaseEvent implements Event {
-	public MemorySearchRequestEvent(Clock clock, Object referenceData) {
-		super(clock);
+	public MemorySearchRequestEvent(Object referenceData) {
 		this.setData(referenceData);
 		
 		// not setting REQUEST tag, because didn't come from end user.

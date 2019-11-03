@@ -18,6 +18,7 @@
 package lett.malcolm.consciouscalculator.emulator.interfaces;
 
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Set;
 
@@ -70,10 +71,25 @@ public interface Event extends Cloneable {
 
 	public void setTimestamp(Instant timestamp);
 
+	/**
+	 * Also sets 'clock' reference, which is used as a convenience by {@link #toString()}.
+	 * @param clock
+	 */
+	public void setTimestamp(Clock clock);
+	
+	/**
+	 * Also sets 'clock' reference, which is used as a convenience by {@link #toString()}.
+	 * @param clock
+	 * @param timestamp
+	 */
+	public void setTimestamp(Clock clock, Instant timestamp);
+	
 	public void setGuid(String guid);
 
 	public void setTags(Set<EventTag> tags);
 
+	public void setReferences(Set<String> references);
+	
 	/**
 	 * Must conform to rules set by {@link DataRules}.
 	 */

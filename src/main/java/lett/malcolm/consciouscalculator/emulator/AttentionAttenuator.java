@@ -136,7 +136,7 @@ public class AttentionAttenuator {
 	// TODO may need to be re-used elsewhere
 	private Event prepareNewEventForUse(Event event) {
 		event.setGuid(UUID.randomUUID().toString());
-		event.setTimestamp(clock.instant());
+		event.setTimestamp(clock, clock.instant());
 		return event;
 	}
 	

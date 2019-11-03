@@ -17,7 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.processors;
 
-import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -49,12 +48,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Processor;
 public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcessor {
 	private static final Logger LOG = LoggerFactory.getLogger(LongTermMemorySearchProcessor.class);
 
-	private Clock clock;
 	private LongTermMemory longTermMemory;
-	
-	public LongTermMemorySearchProcessor(Clock clock) {
-		this.clock = clock;
-	}
 	
 	@Override
 	public void setLTM(LongTermMemory longTermMemory) {
@@ -126,7 +120,7 @@ public class LongTermMemorySearchProcessor implements Processor, LTMAwareProcess
 	 */
 	private Event wrap(List<Object> foundMemories) {
 		// mis-using the originally intended usage of MemoryEvent, in deference to new ideas
-		return new MemoryEvent(clock, "", foundMemories);
+		return new MemoryEvent("", foundMemories);
 	}
 
 }

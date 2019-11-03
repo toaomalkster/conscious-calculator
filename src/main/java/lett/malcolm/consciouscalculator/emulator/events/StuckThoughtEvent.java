@@ -17,9 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.events;
 
-
-import java.time.Clock;
-
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 
 /**
@@ -29,8 +26,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
  * @author Malcolm Lett
  */
 public class StuckThoughtEvent extends BaseEvent implements Event {
-	public StuckThoughtEvent(Clock clock, String latestEventGuid) {
-		super(clock);
+	public StuckThoughtEvent(String latestEventGuid) {
 		this.references().add(latestEventGuid);
 		
 		// best not to store a null value

@@ -17,9 +17,6 @@
  */
 package lett.malcolm.consciouscalculator.emulator.events;
 
-
-import java.time.Clock;
-
 import lett.malcolm.consciouscalculator.emulator.interfaces.Event;
 import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
 
@@ -29,8 +26,7 @@ import lett.malcolm.consciouscalculator.emulator.interfaces.EventTag;
  * @author Malcolm Lett
  */
 public class TextRequestEvent extends BaseEvent implements Event {
-	public TextRequestEvent(Clock clock, String text) {
-		super(clock);
+	public TextRequestEvent(String text) {
 		this.setData(text);
 		this.tags().add(EventTag.REQUEST);
 	}

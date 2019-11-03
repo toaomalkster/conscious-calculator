@@ -109,15 +109,15 @@ public class Emulator {
 		this.processors = new ArrayList<>();
 		
 		inputInterceptors.add(consciousFeedbackToSTMInterceptor);
-		inputInterceptors.add(new RequestCommandInterceptor(clock));
-		inputInterceptors.add(new StuckThoughtInterceptor(clock));
-		processors.add(new ExpressionEvaluationProcessor(clock));
-		processors.add(new EquationEvaluationProcessor(clock));
-		processors.add(new ExpressionAndEquationParseProcessor(clock));
-		processors.add(new ExpressionResponseProcessor(clock));
-		processors.add(new SpeakActionProcessor(clock));
-		processors.add(new FindMatchingConceptProcessor(clock));
-		processors.add(new LongTermMemorySearchProcessor(clock));
+		inputInterceptors.add(new RequestCommandInterceptor());
+		inputInterceptors.add(new StuckThoughtInterceptor());
+		processors.add(new ExpressionEvaluationProcessor());
+		processors.add(new EquationEvaluationProcessor());
+		processors.add(new ExpressionAndEquationParseProcessor());
+		processors.add(new ExpressionResponseProcessor());
+		processors.add(new SpeakActionProcessor());
+		processors.add(new FindMatchingConceptProcessor());
+		processors.add(new LongTermMemorySearchProcessor());
 		
 		for (Processor processor: processors) {
 			if (processor instanceof ActionAwareProcessor) {
