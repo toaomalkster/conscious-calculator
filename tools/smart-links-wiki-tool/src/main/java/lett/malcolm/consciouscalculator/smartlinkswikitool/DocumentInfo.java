@@ -3,6 +3,8 @@ package lett.malcolm.consciouscalculator.smartlinkswikitool;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,8 +76,11 @@ public class DocumentInfo {
 		return labels;
 	}
 	
-	public void setLabels(Set<String> labels) {
-		this.labels = labels;
+	public void setLabels(Collection<String> labels) {
+		if (labels == null) {
+			labels = Collections.emptySet();
+		}
+		this.labels = new HashSet<>(labels);
 	}
 	
 	public LocalDate getCreatedDate() {
