@@ -38,7 +38,7 @@ public class DocumentMetadataScanner {
 	}
 	
 	private DocumentInfo documentInfoOf(File file) {
-		return new DocumentParser(file).getMetadata();
+		return new DocumentParser(root, file).getMetadata();
 	}
 	
 	private FileFilter isMarkdownFile() {

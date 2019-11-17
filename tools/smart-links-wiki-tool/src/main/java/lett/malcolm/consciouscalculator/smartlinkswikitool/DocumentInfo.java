@@ -13,12 +13,17 @@ public class DocumentInfo {
 	private Set<String> labels = new HashSet<>();
 	private LocalDate createdDate;
 
-	public DocumentInfo(File file) {
+	// path relative to the search root, used for display
+	private String relativePath;
+	
+	public DocumentInfo(File file, String relativePath) {
 		this.file = file;
+		this.relativePath = relativePath;
 	}
 	
-	public DocumentInfo(File file, Set<String> labels, LocalDate createdDate) {
+	public DocumentInfo(File file, String relativePath, Set<String> labels, LocalDate createdDate) {
 		this.file = file;
+		this.relativePath = relativePath;
 		this.labels = labels;
 		this.createdDate = createdDate;
 	}
@@ -27,7 +32,12 @@ public class DocumentInfo {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Document{");
-		builder.append(getLinkPath());
+		builder.append(getRelativePath());
+
+//		if (getLinkPath() != null) {
+//			builder.append(",");
+//			builder.append("link=\"").append(getLinkPath()).append("\"");
+//		}
 		
 		if (createdDate != null) {
 			builder.append(",");
@@ -49,6 +59,10 @@ public class DocumentInfo {
 	
 	public void setFile(File file) {
 		this.file = file;
+	}
+	
+	public String getRelativePath() {
+		return relativePath;
 	}
 	
 	public String getLinkPath() {
