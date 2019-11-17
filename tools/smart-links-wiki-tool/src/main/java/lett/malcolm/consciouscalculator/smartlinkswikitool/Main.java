@@ -17,15 +17,80 @@
  */
 package lett.malcolm.consciouscalculator.smartlinkswikitool;
 
-import org.apache.commons.lang3.StringUtils;
+import java.io.File;
+import java.util.List;
 
 /**
  * @author Malcolm Lett
  */
 public class Main {
 
-	public static void main(String[] args) {
-		System.out.println(StringUtils.center("Hello world", 80, "-"));
+	public static void main(String[] args) throws Exception {
+		String path;
+		try {
+			path = parseRequest(args);
+		} catch (HelpRequestedException e) {
+			PrintHelp();
+			System.out.println();
+			return;
+		} catch (IllegalArgumentException e) {
+			if (e.getMessage() != null) {
+				System.out.println(e.getMessage());
+				System.out.println();
+			}
+			PrintHelp();
+			System.out.println();
+			System.exit(1); // error
+			return;
+		}
+		
+		// check
+		if (!new File(path).exists()) {
+			throw new IllegalArgumentException("Path does not exist: " + path);
+		}
+		if (!new File(path).isDirectory()) {
+			throw new IllegalArgumentException("Not a directory: " + path);
+		}
+		
+		// run
+		File root = new File(path).getCanonicalFile();
+		System.out.println("Scanning " + root);
+		
+		DocumentMetadataScanner scanner = new DocumentMetadataScanner(root);
+		List<DocumentInfo> docs = scanner.findDocuments();
+		System.out.println(docs);
+	}
+	
+	public static String parseRequest(String[] args) throws IllegalArgumentException, HelpRequestedException {
+		if (args.length < 1) {
+			throw new HelpRequestedException();
+		}
+		
+		if (args.length < 1) {
+			throw new IllegalArgumentException("Too many arguments");
+		}
+		
+		for (int i=0; i < args.length; i++) {
+			if (args[i].equals("--help")) {
+				throw new HelpRequestedException();
+			}
+			else if (args[i].startsWith("/") || args[i].startsWith("-")) {
+				throw new IllegalArgumentException("Unknown option: " + args[i]);
+			}
+		}
+		
+		return args[0];
+	}
+	
+	public static void PrintHelp() {
+		System.out.println("usage:");
+		System.out.println("   java -jar smart-links-wiki-tool-xxx.jar path");
+		System.out.println("where:");
+		System.out.println("   path - root path to search for smart links");
+	}
+	
+	public static class HelpRequestedException extends RuntimeException {
+		
 	}
 	
 }
