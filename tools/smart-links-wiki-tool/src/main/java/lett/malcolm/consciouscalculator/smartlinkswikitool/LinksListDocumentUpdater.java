@@ -151,7 +151,7 @@ public class LinksListDocumentUpdater {
 
 		// list
 		for (DocumentInfo doc: docs) {
-			result.add("* [" + doc.getLinkPath() + "]");
+			result.add("* " + doc.getWikiLink());
 		}
 		
 		// blank line at end
@@ -171,16 +171,27 @@ public class LinksListDocumentUpdater {
 	private List<String> replaceSection(List<String> content, ListRequest toReplace, List<String> newSection) {
 		List<String> result = new ArrayList<>();
 		for (int idx = 0; idx < content.size(); idx++) {
-			if (idx == toReplace.getStartLineIdx()) {
-				String lineTerminator = MyFileUtils.getLineEnding(content.get(idx-1));
+			if (idx < toReplace.getStartLineIdx() || idx >= toReplace.getEndLineIdx()) {
+				result.add(content.get(idx));
+			}
+			
+			// add BEFORE next line, in case we are on the very last line already
+			if ((idx+1) == toReplace.getStartLineIdx()) {
+				String lineTerminator;
+				try {
+					lineTerminator = MyFileUtils.getLineEnding(content.get(idx));
+				} catch (IllegalArgumentException e) {
+					// fallback: current line doesn't have a line-ending (it's probably the last line), so:
+					// - determine line terminator from previous line
+					// - add retrospectively add line terminator to current line
+					//   (can just add to the list, because it all gets concatenated)
+					lineTerminator = MyFileUtils.getLineEnding(content.get(idx-1));
+					result.add(lineTerminator);
+				}
 				
 				for (String newSectionLine: newSection) {
 					result.add(newSectionLine + lineTerminator);
 				}
-			}
-			
-			if (idx < toReplace.getStartLineIdx() || idx >= toReplace.getEndLineIdx()) {
-				result.add(content.get(idx));
 			}
 		}
 		return result;

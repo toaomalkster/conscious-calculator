@@ -87,9 +87,20 @@ public class DocumentInfo {
 		return relativePath;
 	}
 	
-	public String getLinkPath() {
-		// TODO
-		return file.getName();
+	/**
+	 * GitHub Wiki handles relative paths behind the scenes, so I only have to provide the page name.
+	 * 
+	 * This also turns the filename into a page name:
+	 * - Long-Term-Memory-Searches.md => [[Long Term Memory Searches]]
+	 * @return
+	 */
+	public String getWikiLink() {
+		String fileName = file.getName();
+		
+		String pageName = fileName.substring(0, fileName.length() - ".md".length());
+		pageName = pageName.replace("-", " ");
+		
+		return "[[" + pageName + "]]";
 	}
 	
 	public Set<String> getLabels() {

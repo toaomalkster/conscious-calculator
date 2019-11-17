@@ -18,7 +18,6 @@
 package lett.malcolm.consciouscalculator.smartlinkswikitool;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * @author Malcolm Lett

@@ -92,9 +92,19 @@ public class DocumentParser {
 	}
 	
 	public String getListMacroLabel(String macroLine) {
-		Matcher listMatcher = LIST_PATTERN.matcher(macroLine);
-		if (listMatcher.find()) {
-			return listMatcher.group(1);
+		// read meta-data line
+		String metadataText = null;
+		Matcher lineMatcher = METADATA_LINE_PATTERN.matcher(macroLine);
+		if (lineMatcher.find()) {
+			metadataText = lineMatcher.group(1);
+		}
+		
+		// read 'list' macro
+		if (metadataText != null) {
+			Matcher listMatcher = LIST_PATTERN.matcher(metadataText);
+			if (listMatcher.find()) {
+				return listMatcher.group(1);
+			}
 		}
 		
 		return null;

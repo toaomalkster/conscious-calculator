@@ -17,6 +17,18 @@
 	<build>
 		<plugins>
 			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.7.0</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<testSource>1.8</testSource>
+					<encoding>UTF-8</encoding>
+					<showDeprecation>true</showDeprecation>
+				</configuration>
+			</plugin>
+		
+			<plugin>
 				<!-- Checks the headers each build but doesn't update automatically in order to avoid messing up git commits.
 				To update, you must follow this order:
 				 1. mvn license:remove
