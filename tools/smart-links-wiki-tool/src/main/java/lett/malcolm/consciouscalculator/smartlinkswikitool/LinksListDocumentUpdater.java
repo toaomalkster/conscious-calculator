@@ -3,9 +3,11 @@ package lett.malcolm.consciouscalculator.smartlinkswikitool;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -15,6 +17,8 @@ import org.apache.commons.io.FileUtils;
  * @author Malcolm Lett
  */
 public class LinksListDocumentUpdater {
+	static final Pattern LIST_PATTERN = Pattern.compile("\\* \\[.\\](\\(.\\))", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
+	
 	private DocumentInfo doc;
 	private File targetFile;
 	private List<DocumentInfo> knownDocuments;
@@ -25,58 +29,144 @@ public class LinksListDocumentUpdater {
 		this.knownDocuments = knownDocuments;
 	}
 	
-	public void executeUpdate() {
-		String content = readContent(doc.getFile(), doc.getRelativePath());
+	public boolean executeUpdate() {
+		DocumentParser parser = new DocumentParser(null, doc.getFile());
 		
-		String toReplace = identifySectionToReplace(content);
+		List<String> contentWithLineEndings = readContent(doc.getFile(), doc.getRelativePath());
 		
-		String replacement = generateNewListSection("work-in-progress", doc.getRelativePath());
+		ListRequest toReplace = identifySectionToReplace(contentWithLineEndings, parser);
 		
-		content = content.replace(toReplace, replacement);
-		writeContent(targetFile, content);
+		List<String> replacementWithoutLineEndings = generateNewListSection("work-in-progress", doc.getRelativePath());
+		
+		contentWithLineEndings = replaceSection(contentWithLineEndings, toReplace, replacementWithoutLineEndings);
+		writeContent(targetFile, contentWithLineEndings);
+		
+		return true;
 	}
 	
-	private String readContent(File file, String displayPath) {
+	/**
+	 * 
+	 * @param file
+	 * @param displayPath
+	 * @return exact lines, with line endings
+	 */
+	private List<String> readContent(File file, String displayPath) {
 		try {
-			return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+			return MyFileUtils.readLinesWithEndings(file);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Error reading file "+displayPath+": "+e.getMessage(), e);
 		}
 	}
 
-	private void writeContent(File file, String content) {
+	/**
+	 * 
+	 * @param file
+	 * @param content lines, with line endings
+	 */
+	private void writeContent(File file, List<String> content) {
 		try {
-			FileUtils.writeStringToFile(file, content, StandardCharsets.UTF_8);
+			StringBuilder buf = new StringBuilder();
+			for (String line: content) {
+				buf.append(line);
+			}
+			FileUtils.writeStringToFile(file, buf.toString(), StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new IllegalArgumentException("Error writing file "+file+": "+e.getMessage(), e);
 		}
 	}
 	
-	private String identifySectionToReplace(String content) {
-		// TODO
-		return "_(List: work-in-progress)_";
+	/**
+	 * 
+	 * @param content
+	 * @param parser
+	 * @return null if nothing
+	 */
+	private ListRequest identifySectionToReplace(List<String> content, DocumentParser parser) {
+		ListRequest request = new ListRequest();
+		
+		boolean found = false;
+		int lineIdx = 0;
+		for (String line: content) {
+			String lineWithoutEnding = MyFileUtils.trimLineEnding(line);
+			
+			if (!found && parser.isListMacroLine(line)) {
+				request.setStartLineIdx(lineIdx + 1);
+				request.setLabel(parser.getListMacroLabel(line));
+				found = true;
+			}
+			else if (found && !line.startsWith("*") && !lineWithoutEnding.isEmpty()) {
+				// stop BEFORE first non-empty line that doesn't start with '*' --- these lines must be kept
+				break;
+			}
+			else if (found && !line.startsWith("*") && lineWithoutEnding.isEmpty() && lineIdx - request.getStartLineIdx() > 1) {
+				// stop AFTER first empty line after '*' --- replace this last blank line
+				request.setEndLineIdx(lineIdx + 1);
+				break;
+			}
+			request.setEndLineIdx(lineIdx + 1);
+			
+			lineIdx++;
+		}
+
+		// final sanity checks
+		if (request.getLabel() != null) {
+			return request;
+		}
+		return null;
 	}
-	
-	private String generateNewListSection(String label, String displayPath) {
+
+	/**
+	 * 
+	 * @param label
+	 * @param displayPath
+	 * @return lines, without line endings
+	 */
+	private List<String> generateNewListSection(String label, String displayPath) {
 		List<DocumentInfo> docs = findDocumentsByLabel(label);
 		if (docs.isEmpty()) {
 			System.out.println("["+displayPath+"] No documents found with label '"+label+"'");
 		}
 		
-		boolean first = true;
-		StringBuilder buf = new StringBuilder();
-		for (DocumentInfo doc: docs) {
-			if (first) {
-				// blank line at start
-				buf.append("\n");
-			}
+		List<String> result = new ArrayList<>();
 
-			buf.append("* [" + doc.getLinkPath() + "]");
-			buf.append("\n");
-			
-			first = false;
+		// blank line at start
+		result.add("");
+
+		// list
+		for (DocumentInfo doc: docs) {
+			result.add("* [" + doc.getLinkPath() + "]");
 		}
-		return buf.toString();
+		
+		// blank line at end
+		result.add("");
+		
+		return result;
+	}
+	
+	/**
+	 * Usually this will REPLACE.
+	 * But when toReplace.endLineIdx == toReplace.startLineIdx, then it INSERTS instead.
+	 * @param content original content lines, with line endings
+	 * @param toReplace
+	 * @param newSection lines, without line endings
+	 * @return new full content, after updates
+	 */
+	private List<String> replaceSection(List<String> content, ListRequest toReplace, List<String> newSection) {
+		List<String> result = new ArrayList<>();
+		for (int idx = 0; idx < content.size(); idx++) {
+			if (idx == toReplace.getStartLineIdx()) {
+				String lineTerminator = MyFileUtils.getLineEnding(content.get(idx-1));
+				
+				for (String newSectionLine: newSection) {
+					result.add(newSectionLine + lineTerminator);
+				}
+			}
+			
+			if (idx < toReplace.getStartLineIdx() || idx >= toReplace.getEndLineIdx()) {
+				result.add(content.get(idx));
+			}
+		}
+		return result;
 	}
 	
 	/**
@@ -104,5 +194,35 @@ public class LinksListDocumentUpdater {
 			}
 		}
 		return false;
+	}
+	
+	private static class ListRequest {
+		private Integer startLineIdx;
+		private Integer endLineIdx; // INSERT if equal to startLineIdx, otherwise REPLACE
+		private String label;
+		
+		public Integer getStartLineIdx() {
+			return startLineIdx;
+		}
+
+		public void setStartLineIdx(Integer startLineIdx) {
+			this.startLineIdx = startLineIdx;
+		}
+
+		public Integer getEndLineIdx() {
+			return endLineIdx;
+		}
+
+		public void setEndLineIdx(Integer endLineIdx) {
+			this.endLineIdx = endLineIdx;
+		}
+
+		public String getLabel() {
+			return label;
+		}
+		
+		public void setLabel(String label) {
+			this.label = label;
+		}
 	}
 }

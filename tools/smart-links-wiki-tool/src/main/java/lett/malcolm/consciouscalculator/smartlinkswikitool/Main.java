@@ -52,7 +52,9 @@ public class Main {
 			throw new IllegalArgumentException("Not a directory: " + request.path);
 		}
 		if (request.target != null && !new File(request.target).exists()) {
-			throw new IllegalArgumentException("Target does not exist: " + request.target);
+			if (!new File(request.target).mkdirs()) {
+				throw new IllegalArgumentException("Target does not exist: " + request.target);
+			}
 		}
 		if (request.target != null && !new File(request.target).isDirectory()) {
 			throw new IllegalArgumentException("Not a directory: " + request.target);

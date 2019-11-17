@@ -51,8 +51,38 @@ public class DocumentParser {
 		
 		DocumentInfo doc = new DocumentInfo(file, path);
 		readMetadata(lines, doc);
+		
+		// also check for macros
+		if (findListMacroLine(lines) != null) {
+			doc.setHasListMacro(true);
+		}
 		return doc;
 	}
+
+	/**
+	 * Finds the whole line containing the list macro.
+	 * @return the line if found, null otherwise
+	 */
+	public String findListMacroLine() {
+		String path = MyFileUtils.relativePathOf(file, root);
+		List<String> lines = readLines(file, path);
+		return findListMacroLine(lines);
+	}
+	
+	public boolean isListMacroLine(String line) {
+		String foundLine = findListMacroLine(Collections.singletonList(line));
+		return (foundLine != null);
+	}
+	
+	public String getListMacroLabel(String macroLine) {
+		Matcher listMatcher = LIST_PATTERN.matcher(macroLine);
+		if (listMatcher.find()) {
+			return listMatcher.group(1);
+		}
+		
+		return null;
+	}
+	
 	
 	private void readMetadata(List<String> fileLines, DocumentInfo doc) {
 		// reverse order for easier logic
@@ -90,14 +120,6 @@ public class DocumentParser {
 				}
 			}
 			
-			// detect 'list' macro
-			if (metadataText != null) {
-				Matcher listMatcher = LIST_PATTERN.matcher(metadataText);
-				if (listMatcher.find()) {
-					doc.setHasListMacro(true);
-				}
-			}
-			
 			// parse added date
 			if (addedDateText != null) {
 				try {
@@ -117,6 +139,28 @@ public class DocumentParser {
 				doc.setLabels(labels);
 			}
 		}
+	}
+
+	private String findListMacroLine(List<String> fileLines) {
+		// examine all lines
+		for (String line: fileLines) {
+			// check if line suitable
+			String metadataText = null;
+			Matcher lineMatcher = METADATA_LINE_PATTERN.matcher(line);
+			if (lineMatcher.find()) {
+				metadataText = lineMatcher.group(1);
+			}
+			
+			// detect 'list' macro
+			if (metadataText != null) {
+				Matcher listMatcher = LIST_PATTERN.matcher(metadataText);
+				if (listMatcher.find()) {
+					return listMatcher.group(1);
+				}
+			}
+		}
+		
+		return null;
 	}
 
 	private List<String> readLines(File file, String displayPath) {

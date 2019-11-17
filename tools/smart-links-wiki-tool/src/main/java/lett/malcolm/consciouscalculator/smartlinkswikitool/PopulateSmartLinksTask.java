@@ -29,7 +29,10 @@ public class PopulateSmartLinksTask {
 		
 		// process
 		for (DocumentInfo doc: docsToUpdate) {
-			System.out.println("["+doc.getRelativePath()+"] Updated links");
+			File targetFile = new File(target, doc.getRelativePath());
+			if (new LinksListDocumentUpdater(doc, targetFile, docs).executeUpdate()) {
+				System.out.println("["+doc.getRelativePath()+"] Updated links");
+			}
 		}
 	}
 }
