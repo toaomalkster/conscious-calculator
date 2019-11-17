@@ -11,12 +11,14 @@ import java.util.stream.Collectors;
 
 public class DocumentInfo {
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	private File file;
+	
+	private final File file;
 	private Set<String> labels = new HashSet<>();
 	private LocalDate createdDate;
+	private boolean hasListMacro;
 
 	// path relative to the search root, used for display
-	private String relativePath;
+	private final String relativePath;
 	
 	public DocumentInfo(File file, String relativePath) {
 		this.file = file;
@@ -48,8 +50,13 @@ public class DocumentInfo {
 		
 		if (!labels.isEmpty()) {
 			builder.append(",");
-			builder.append("labels: ");
+			builder.append("labels:");
 			builder.append(labels.stream().collect(Collectors.joining(",")));
+		}
+		
+		if (hasListMacro) {
+			builder.append(",");
+			builder.append("macros:list");
 		}
 		builder.append("}");
 		return builder.toString();
@@ -57,10 +64,6 @@ public class DocumentInfo {
 
 	public File getFile() {
 		return file;
-	}
-	
-	public void setFile(File file) {
-		this.file = file;
 	}
 	
 	public String getRelativePath() {
@@ -97,6 +100,18 @@ public class DocumentInfo {
 		}
 		
 		return createdDate.format(FORMATTER);
+	}
+
+	public boolean isHasListMacro() {
+		return hasListMacro;
+	}
+
+	public void setHasListMacro(boolean hasListMacro) {
+		this.hasListMacro = hasListMacro;
+	}
+
+	public static DateTimeFormatter getFormatter() {
+		return FORMATTER;
 	}
 	
 	

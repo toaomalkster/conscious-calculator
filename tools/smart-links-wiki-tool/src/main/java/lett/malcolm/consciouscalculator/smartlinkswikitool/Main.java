@@ -26,9 +26,9 @@ import java.util.List;
 public class Main {
 
 	public static void main(String[] args) throws Exception {
-		String path;
+		TaskRequest request;
 		try {
-			path = parseRequest(args);
+			request = parseRequest(args);
 		} catch (HelpRequestedException e) {
 			PrintHelp();
 			System.out.println();
@@ -45,28 +45,32 @@ public class Main {
 		}
 		
 		// check
-		if (!new File(path).exists()) {
-			throw new IllegalArgumentException("Path does not exist: " + path);
+		if (!new File(request.path).exists()) {
+			throw new IllegalArgumentException("Path does not exist: " + request.path);
 		}
-		if (!new File(path).isDirectory()) {
-			throw new IllegalArgumentException("Not a directory: " + path);
+		if (!new File(request.path).isDirectory()) {
+			throw new IllegalArgumentException("Not a directory: " + request.path);
+		}
+		if (request.target != null && !new File(request.target).exists()) {
+			throw new IllegalArgumentException("Target does not exist: " + request.target);
+		}
+		if (request.target != null && !new File(request.target).isDirectory()) {
+			throw new IllegalArgumentException("Not a directory: " + request.target);
 		}
 		
 		// run
-		File root = new File(path).getCanonicalFile();
+		File root = new File(request.path).getCanonicalFile();
+		File target = (request.target == null) ? null : new File(request.target).getCanonicalFile();
 		System.out.println("Scanning " + root);
-		
-		DocumentMetadataScanner scanner = new DocumentMetadataScanner(root);
-		List<DocumentInfo> docs = scanner.findDocuments();
-		System.out.println(docs);
+		new PopulateSmartLinksTask(root, target).run();
 	}
 	
-	public static String parseRequest(String[] args) throws IllegalArgumentException, HelpRequestedException {
+	public static TaskRequest parseRequest(String[] args) throws IllegalArgumentException, HelpRequestedException {
 		if (args.length < 1) {
 			throw new HelpRequestedException();
 		}
 		
-		if (args.length < 1) {
+		if (args.length > 2) {
 			throw new IllegalArgumentException("Too many arguments");
 		}
 		
@@ -78,19 +82,48 @@ public class Main {
 				throw new IllegalArgumentException("Unknown option: " + args[i]);
 			}
 		}
-		
-		return args[0];
+
+		TaskRequest request = new TaskRequest();
+		if (args.length >= 1) {
+			request.path = args[0];
+		}
+		if (args.length >= 2) {
+			request.target = args[1];
+		}
+		return request;
 	}
 	
 	public static void PrintHelp() {
 		System.out.println("usage:");
-		System.out.println("   java -jar smart-links-wiki-tool-xxx.jar path");
+		System.out.println("   java -jar smart-links-wiki-tool-xxx.jar path [target]");
 		System.out.println("where:");
 		System.out.println("   path - root path to search for smart links");
+		System.out.println("   target - optional target folder for updated files. Otherwise replaces files in-place");
 	}
 	
 	public static class HelpRequestedException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+	}
+	
+	public static class TaskRequest {
+		private String path;
+		private String target;
 		
+		public String getPath() {
+			return path;
+		}
+		
+		public void setPath(String path) {
+			this.path = path;
+		}
+		
+		public String getTarget() {
+			return target;
+		}
+		
+		public void setTarget(String target) {
+			this.target = target;
+		}
 	}
 	
 }

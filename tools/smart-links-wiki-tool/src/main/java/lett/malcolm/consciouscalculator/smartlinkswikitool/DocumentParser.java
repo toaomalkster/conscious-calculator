@@ -24,8 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 public class DocumentParser {
 	static final int MAX_METADATA_READ_LINES = 10;
 	static final Pattern METADATA_LINE_PATTERN = Pattern.compile("\\(([^)]*)\\)");
-	static final Pattern ADDED_PATTERN = Pattern.compile("Added[:]? ([0-9-\\\\/]+)");
-	static final Pattern LABELS_PATTERN = Pattern.compile("Labels[:]? ([^.;]+)($|.|;)");
+	static final Pattern ADDED_PATTERN = Pattern.compile("Added[:]? ([0-9-\\\\/]+)", Pattern.CASE_INSENSITIVE);
+	static final Pattern LABELS_PATTERN = Pattern.compile("Labels[:]? ([^.;]+)($|.|;)", Pattern.CASE_INSENSITIVE);
+	static final Pattern LIST_PATTERN = Pattern.compile("List[:]? ([^.;]+)($|.|;)", Pattern.CASE_INSENSITIVE);
 	static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	private File root;
@@ -86,6 +87,14 @@ public class DocumentParser {
 				Matcher labelsMatcher = LABELS_PATTERN.matcher(metadataText);
 				if (labelsMatcher.find()) {
 					labelsText = labelsMatcher.group(1);
+				}
+			}
+			
+			// detect 'list' macro
+			if (metadataText != null) {
+				Matcher listMatcher = LIST_PATTERN.matcher(metadataText);
+				if (listMatcher.find()) {
+					doc.setHasListMacro(true);
 				}
 			}
 			
