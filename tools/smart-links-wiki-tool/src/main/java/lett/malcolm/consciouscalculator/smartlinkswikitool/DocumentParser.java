@@ -41,9 +41,10 @@ import org.apache.commons.lang3.StringUtils;
 public class DocumentParser {
 	static final int MAX_METADATA_READ_LINES = 10;
 	static final Pattern METADATA_LINE_PATTERN = Pattern.compile("\\(([^)]*)\\)");
+	static final Pattern METADATA_SECTION_SEPARATOR = Pattern.compile("[.;]");
 	static final Pattern ADDED_PATTERN = Pattern.compile("Added[:]? ([0-9-\\\\/]+)", Pattern.CASE_INSENSITIVE);
-	static final Pattern LABELS_PATTERN = Pattern.compile("Labels[:]? ([^.;]+)($|.|;)", Pattern.CASE_INSENSITIVE);
-	static final Pattern LIST_PATTERN = Pattern.compile("List[:]? ([^.;]+)($|.|;)", Pattern.CASE_INSENSITIVE);
+	static final Pattern LABELS_PATTERN = Pattern.compile("Labels[:]? (.+)", Pattern.CASE_INSENSITIVE);
+	static final Pattern LIST_PATTERN = Pattern.compile("List[:]? (.+)", Pattern.CASE_INSENSITIVE);
 	static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	private File root;
@@ -70,46 +71,32 @@ public class DocumentParser {
 		readMetadata(lines, doc);
 		
 		// also check for macros
-		if (findListMacroLine(lines) != null) {
+		if (lines.stream().anyMatch(l -> isListMacroLine(l))) {
 			doc.setHasListMacro(true);
 		}
 		return doc;
 	}
 
-	/**
-	 * Finds the whole line containing the list macro.
-	 * @return the line if found, null otherwise
-	 */
-	public String findListMacroLine() {
-		String path = MyFileUtils.relativePathOf(file, root);
-		List<String> lines = readLines(file, path);
-		return findListMacroLine(lines);
-	}
-	
 	public boolean isListMacroLine(String line) {
-		String foundLine = findListMacroLine(Collections.singletonList(line));
-		return (foundLine != null);
+		return getListMacroLabel(line) != null;
 	}
 	
-	public String getListMacroLabel(String macroLine) {
-		// read meta-data line
-		String metadataText = null;
-		Matcher lineMatcher = METADATA_LINE_PATTERN.matcher(macroLine);
-		if (lineMatcher.find()) {
-			metadataText = lineMatcher.group(1);
-		}
-		
-		// read 'list' macro
-		if (metadataText != null) {
-			Matcher listMatcher = LIST_PATTERN.matcher(metadataText);
-			if (listMatcher.find()) {
+	/**
+	 * Gets the label from the list macro on the given line, if present.
+	 * @param line
+	 * @return null if not a list-macro line, or label cannot be determined
+	 */
+	public String getListMacroLabel(String line) {
+		// find and parse 'list' macro
+		for (String section: extractMetadataSections(line)) {
+			Matcher listMatcher = LIST_PATTERN.matcher(section);
+			if (listMatcher.matches()) {
 				return listMatcher.group(1);
 			}
 		}
 		
 		return null;
 	}
-	
 	
 	private void readMetadata(List<String> fileLines, DocumentInfo doc) {
 		// reverse order for easier logic
@@ -122,27 +109,19 @@ public class DocumentParser {
 				break;
 			}
 			
-			// check if line suitable
-			String metadataText = null;
-			Matcher lineMatcher = METADATA_LINE_PATTERN.matcher(line);
-			if (lineMatcher.find()) {
-				metadataText = lineMatcher.group(1);
-			}
-			
-			// extract added date
+			// extract sections if line suitable
 			String addedDateText = null;
-			if (metadataText != null) {
-				Matcher addedMatcher = ADDED_PATTERN.matcher(metadataText);
-				if (addedMatcher.find()) {
+			String labelsText = null;
+			for (String section: extractMetadataSections(line)) {
+				// extract added date
+				Matcher addedMatcher = ADDED_PATTERN.matcher(section);
+				if (addedMatcher.matches()) {
 					addedDateText = addedMatcher.group(1);
 				}
-			}
-			
-			// extract labels
-			String labelsText = null;
-			if (metadataText != null) {
-				Matcher labelsMatcher = LABELS_PATTERN.matcher(metadataText);
-				if (labelsMatcher.find()) {
+				
+				// extract labels
+				Matcher labelsMatcher = LABELS_PATTERN.matcher(section);
+				if (labelsMatcher.matches()) {
 					labelsText = labelsMatcher.group(1);
 				}
 			}
@@ -167,27 +146,25 @@ public class DocumentParser {
 			}
 		}
 	}
-
-	private String findListMacroLine(List<String> fileLines) {
-		// examine all lines
-		for (String line: fileLines) {
-			// check if line suitable
-			String metadataText = null;
-			Matcher lineMatcher = METADATA_LINE_PATTERN.matcher(line);
-			if (lineMatcher.find()) {
-				metadataText = lineMatcher.group(1);
-			}
+	
+	private List<String> extractMetadataSections(String line) {
+		// check if line is suitable
+		// form: "...(metadata)..."
+		Matcher lineMatcher = METADATA_LINE_PATTERN.matcher(line);
+		if (lineMatcher.find()) {
+			String metadataText = lineMatcher.group(1);
 			
-			// detect 'list' macro
-			if (metadataText != null) {
-				Matcher listMatcher = LIST_PATTERN.matcher(metadataText);
-				if (listMatcher.find()) {
-					return listMatcher.group(1);
-				}
-			}
+			// extract sections
+			// form: "xxxx. xxxx. xxxx."
+			// form: "xxxx; xxxx; xxxx"
+			String[] sections = METADATA_SECTION_SEPARATOR.split(metadataText);
+			return Arrays.stream(sections)
+				.map(StringUtils::trimToNull)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 		}
 		
-		return null;
+		return Collections.emptyList();
 	}
 
 	private List<String> readLines(File file, String displayPath) {
