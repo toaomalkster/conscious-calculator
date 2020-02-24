@@ -1,0 +1,21 @@
+Example using websockets in a really simple way:
+https://www.magalix.com/blog/extending-the-kubernetes-controller
+
+see these lines:
+	def event_loop():
+		log.info("Starting the service")
+		url = '{}/api/v1/namespaces/{}/configmaps?watch=true"'.format(
+			base_url, namespace)
+		r = requests.get(url, stream=True)
+		for line in r.iter_lines():
+			obj = json.loads(line)
+
+	event_loop()
+
+
+Due to the use of websockets and ‘stream=True’, the event-loop only connects once and keeps getting new lines over time.
+https://docs.openshift.com/container-platform/3.5/rest_api/index.html#rest-api-websockets
+
+With further links to:
+* https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications
+* https://tools.ietf.org/html/rfc6455
