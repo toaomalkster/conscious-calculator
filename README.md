@@ -10,7 +10,15 @@ Written in Java.
 Theoretical background and design discussions are all available here:
 * [Wiki](https://github.com/toaomalkster/conscious-calculator/wiki)
 
-# Website
+In particular, see:
+* https://github.com/toaomalkster/conscious-calculator/wiki/Architecture-Overview
+* https://github.com/toaomalkster/conscious-calculator/wiki/A-Theory-of-the-Human-Mind
+
+# Website (Deprecated)
+**The code and website here represent older ideas, and aren't worth looking at.**
+**Please see the theoretical background in the wiki instead.**
+**A new neural network based solution that incorporates my latest ideas is being worked on.**
+
 A [test site](https://conscious-calculator.herokuapp.com) is available on Heroku.
 
 It's hosted under a free-tier, which goes to sleep during inactivity, so it may take a few seconds to start.
