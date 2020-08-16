@@ -2,9 +2,11 @@
 [![Build Status](https://travis-ci.com/toaomalkster/conscious-calculator.svg?branch=master)](https://travis-ci.com/toaomalkster/conscious-calculator)
 
 # Conscious Calculator
-Application that attempts to emulate consciousness, but at the level of intelligence of a calculator.
+Conscious Calculator is an application that attempts to emulate consciousness, and a collection of theoretical works on the source of conscious experience.
 
-Written in Java.
+Application:
+* Application that attempts to emulate consciousness, but at the level of intelligence of a calculator.
+* Currently written in Java, but there are plans to replace this with a neural network.
 
 # Documentation
 Theoretical background and design discussions are all available here:
