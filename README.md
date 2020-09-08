@@ -7,18 +7,12 @@ The site has three parts...
 
 
 # Theory
-Discussions on theoretical background are available from the "Theory" section of navigation box here:
-* [Wiki](https://github.com/toaomalkster/conscious-calculator/wiki)
-
-In particular, see:
+Discussions on theoretical background are available from the "Theory" section of navigation box within the site [wiki](https://github.com/toaomalkster/conscious-calculator/wiki). In particular, see:
 * https://github.com/toaomalkster/conscious-calculator/wiki/A-Theory-of-the-Human-Mind
 
 
 # Design
-Design documents behind the software emulation of consciousness mechanisms are available from the "Design" section of navigation box here:
-* [Wiki](https://github.com/toaomalkster/conscious-calculator/wiki)
-
-In particular, see:
+Design documents behind the software emulation of consciousness mechanisms are available from the "Design" section of navigation box within the site [wiki](https://github.com/toaomalkster/conscious-calculator/wiki). In particular, see:
 * https://github.com/toaomalkster/conscious-calculator/wiki/Architecture-Overview
 
 
