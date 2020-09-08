@@ -21,17 +21,10 @@ Conscious Calculator is an application that attempts to emulate consciousness.
 * Attempts to emulate consciousness, but at the level of intelligence of a calculator.
 * Currently written in Java, but there are plans to replace this with a neural network.
 
-**Website (Deprecated): **
-**The code and website here represent older ideas, and aren't worth looking at.**
-**Please see the theoretical background in the wiki instead.**
-**A new neural network based solution that incorporates my latest ideas is being worked on.**
+**Website (Deprecated):**
+The code and website here represent older ideas, and aren't worth looking at. Please see the theoretical background in the wiki instead. A new neural network based solution that incorporates my latest ideas is being worked on. The [old test site](https://conscious-calculator.herokuapp.com) is available on Heroku. It's hosted under a free-tier, which goes to sleep during inactivity, so it may take a few seconds to start. Login credentials are `letmein` for both username and password.
 
-A [test site](https://conscious-calculator.herokuapp.com) is available on Heroku.
-
-It's hosted under a free-tier, which goes to sleep during inactivity, so it may take a few seconds to start.
-Login credentials are `letmein` for both username and password.
-
-**Running Locally or Hosting: **
+**Running Locally or Hosting:**
 Environment configuration properties required for running in prod:
 
     LOGIN_USERNAME     - single login credentials username
