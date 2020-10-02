@@ -33,3 +33,6 @@ Environment configuration properties required for running in prod:
 
 # License
 * [GNU General Public License GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
+
+# Contact
+my.name at gmail.
