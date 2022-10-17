@@ -10,11 +10,18 @@ The site has three parts...
 Discussions on theoretical background are available from here:
 * [Theory Home](https://github.com/toaomalkster/conscious-calculator/wiki/Theory-Home)
 
+<<<<<<< Updated upstream
+=======
+# Old and Out of Date
+## Website
+A [test site](https://conscious-calculator.herokuapp.com) is available on Heroku.
+>>>>>>> Stashed changes
 
 # Design
 Design documents behind the software emulation of consciousness mechanisms are available from the "Design" section of navigation box within the site [wiki](https://github.com/toaomalkster/conscious-calculator/wiki). In particular, see:
 * [Architecture Overview](https://github.com/toaomalkster/conscious-calculator/wiki/Architecture-Overview)
 
+<<<<<<< Updated upstream
 
 # Emulation of Consciousness - The Conscious Calculator
 Conscious Calculator is an application that attempts to emulate consciousness.
@@ -25,6 +32,9 @@ Conscious Calculator is an application that attempts to emulate consciousness.
 The code and website here represent older ideas, and aren't worth looking at. Please see the theoretical background in the wiki instead. A new neural network based solution that incorporates my latest ideas is being worked on. The [old test site](https://conscious-calculator.herokuapp.com) is available on Heroku. It's hosted under a free-tier, which goes to sleep during inactivity, so it may take a few seconds to start. Login credentials are `letmein` for both username and password.
 
 **Running Locally or Hosting:**
+=======
+## Running Locally or Hosting
+>>>>>>> Stashed changes
 Environment configuration properties required for running in prod:
 
     LOGIN_USERNAME     - single login credentials username
