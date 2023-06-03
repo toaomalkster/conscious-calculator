@@ -3,8 +3,9 @@ Welcome to this test text.
 It'll be interesting to see what you find.
 
 Contents:
-
-toc
+* item 1
+  * item 2
+* item 3
 
 # I. Background
 

@@ -1,3 +1,5 @@
+# References:
+# https://www.programiz.com/python-programming/regex
 import os
 import re
 
@@ -10,7 +12,43 @@ def print_hi(name):
 # Gets the bounds of the TOC listing, excluding the TOC header.
 # return [start (inclusive), end (exclusive)]
 def get_toc_line_bounds(lines):
-    return [6, 7]
+    bounds = [-1, -1]
+    # find 'contents' marker
+    idx = -1
+    found = False
+    for i, line in enumerate(lines):
+        if re.match(r'^contents[^0-9a-zA-Z]*$', line, re.IGNORECASE):
+            idx = i
+            found = True
+            break
+    if not found:
+        raise Exception('No marker found indicating location for contents section')
+
+    # find start of existing toc entries
+    found = False
+    idx += 1
+    for i, line in enumerate(lines[idx:], start=idx):
+        if line.strip():
+            idx = i
+            found = True
+            break
+    if not found:
+        raise Exception('No start of existing TOC entries found following contents section marker')
+    bounds[0] = idx
+
+    # find end of existing toc entries
+    found = False
+    idx += 1
+    for i, line in enumerate(lines[idx:], start=idx):
+        if not line.strip() or line.startswith('#'):
+            idx = i
+            found = True
+            break
+    if not found:
+        raise Exception('No end of existing TOC entries found following contents section marker')
+    bounds[1] = idx
+
+    return bounds
 
 
 # Searches lines given capturing any headings and turning them into TOC entries.
@@ -21,7 +59,6 @@ def get_toc_entries(lines):
     for line in lines:
         match = re.match(r'^(#+) .*$', line)
         if match and len(match.group(1)) <= 3:
-            # print(convert_heading_to_toc_entry(line), end='')
             entries.append(convert_heading_to_toc_entry(line))
     return entries
 
@@ -56,12 +93,11 @@ def print_file(path):
     lines = f.readlines()
     print(lines)
     toc_bounds = get_toc_line_bounds(lines)
+    print(f'toc bounds: {toc_bounds}')
     entries = get_toc_entries(lines[toc_bounds[1]:])
-    newLines = lines[0:toc_bounds[0]] + entries + lines[toc_bounds[1]:]
-    for line in newLines:
+    new_lines = lines[0:toc_bounds[0]] + entries + lines[toc_bounds[1]:]
+    for line in new_lines:
         print(line, end='')
-    # for line in entries:
-    #     print(line)
 
     res = re.match('^#+ .*$', '#### abyss')
     print(f'blag: {res}')
@@ -73,3 +109,5 @@ if __name__ == '__main__':
     print(f'os cwd:     {os.getcwd()}')
     print(f'script dir: {os.path.realpath(os.path.dirname(__file__))}')
     print_file('../test/text.md')
+    #print(not not ' '.strip())
+
