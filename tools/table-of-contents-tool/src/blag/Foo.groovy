@@ -1,4 +1,0 @@
-package blag
-
-class Foo {
-}

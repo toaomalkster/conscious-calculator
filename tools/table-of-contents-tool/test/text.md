@@ -5,6 +5,8 @@ Quisque varius egestas blandit. Sed faucibus metus vel purus vehicula rutrum. Nu
 
 Contents:
 
+toc
+
 # Background
 
 ## Did you know
