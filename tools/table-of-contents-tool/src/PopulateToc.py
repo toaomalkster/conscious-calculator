@@ -73,8 +73,8 @@ def convert_heading_to_toc_entry(line):
 def convert_heading_to_href(heading):
     # remove leading header indication
     heading = re.sub(r'^#+ ', '', heading)
-    # remove all but alphanumeric and spaces
-    heading = re.sub(r'[^0-9a-zA-Z ]', '', heading)
+    # remove all but alphanumeric, hyphens, and spaces
+    heading = re.sub(r'[^0-9a-zA-Z -]', '', heading)
     # convert to lowercase
     heading = heading.lower()
     # turn all spaces into hyphens
@@ -86,7 +86,7 @@ def convert_heading_to_href(heading):
 def transform_file_inplace(path):
     # read all lines and identify whether file should be processed
     try:
-        with open(path, 'r') as f:
+        with open(path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
         toc_bounds = get_toc_line_bounds(lines)
     except Exception as e:
@@ -98,7 +98,7 @@ def transform_file_inplace(path):
     entries = get_toc_entries(lines[toc_bounds[1]:])
 
     # save result, overwriting original file
-    with open(path, "w") as f:
+    with open(path, 'w', encoding='utf-8') as f:
         # original lines _before_ TOC entries (including TOC header)
         f.writelines(lines[0:toc_bounds[0]])
 
