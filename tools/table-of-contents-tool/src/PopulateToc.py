@@ -1,12 +1,7 @@
 # References:
 # https://www.programiz.com/python-programming/regex
-import os
 import re
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import argparse
 
 
 # Gets the bounds of the TOC listing, excluding the TOC header.
@@ -88,26 +83,40 @@ def convert_heading_to_href(heading):
     return f'#{heading}'
 
 
-def print_file(path):
-    f = open(path, 'r+')
-    lines = f.readlines()
-    print(lines)
-    toc_bounds = get_toc_line_bounds(lines)
-    print(f'toc bounds: {toc_bounds}')
+def transform_file_inplace(path):
+    # read all lines and identify whether file should be processed
+    try:
+        with open(path, 'r') as f:
+            lines = f.readlines()
+        toc_bounds = get_toc_line_bounds(lines)
+    except Exception as e:
+        print(f'{path} - Skipping: {e}')
+        return
+
+    # process
+    print(f'{path} - Processing')
     entries = get_toc_entries(lines[toc_bounds[1]:])
-    new_lines = lines[0:toc_bounds[0]] + entries + lines[toc_bounds[1]:]
-    for line in new_lines:
-        print(line, end='')
 
-    res = re.match('^#+ .*$', '#### abyss')
-    print(f'blag: {res}')
+    # save result, overwriting original file
+    with open(path, "w") as f:
+        # original lines _before_ TOC entries (including TOC header)
+        f.writelines(lines[0:toc_bounds[0]])
+
+        # TOC entries
+        f.writelines(entries)
+
+        # original lines _after_ TOC entries
+        f.writelines(lines[toc_bounds[1]:])
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # print_hi('PyCharm')
-    print(f'os cwd:     {os.getcwd()}')
-    print(f'script dir: {os.path.realpath(os.path.dirname(__file__))}')
-    print_file('../test/text.md')
-    #print(not not ' '.strip())
+    # Initialize CLI parser
+    cli = argparse.ArgumentParser(description='Table of contents populator for markdown files.')
+    cli.add_argument('file', nargs='+', help='Markdown file(s) to process')
 
+    # Parse and process CLI arguments
+    args = cli.parse_args()
+
+    # Run
+    for filename in args.file:
+        transform_file_inplace(filename)
