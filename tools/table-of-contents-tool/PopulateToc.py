@@ -2,6 +2,7 @@
 # https://www.programiz.com/python-programming/regex
 import re
 import argparse
+import sys
 
 
 # Gets the bounds of the TOC listing, excluding the TOC header.
@@ -64,7 +65,7 @@ def convert_heading_to_toc_entry(line):
     level = len(match.group(1))
     heading = match.group(2)
     href = convert_heading_to_href(heading)
-    indent = '  ' * (level-1)
+    indent = '  ' * (level - 1)
     return f'{indent}* [{heading}]({href})\n'
 
 
@@ -83,7 +84,7 @@ def convert_heading_to_href(heading):
     return f'#{heading}'
 
 
-def transform_file_inplace(path):
+def transform_file(path, output):
     # read all lines and identify whether file should be processed
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -97,8 +98,8 @@ def transform_file_inplace(path):
     print(f'{path} - Processing')
     entries = get_toc_entries(lines[toc_bounds[1]:])
 
-    # save result, overwriting original file
-    with open(path, 'w', encoding='utf-8') as f:
+    # save result, either overwriting original file or saving to a new file
+    with open(output, 'w', encoding='utf-8') as f:
         # original lines _before_ TOC entries (including TOC header)
         f.writelines(lines[0:toc_bounds[0]])
 
@@ -113,10 +114,18 @@ if __name__ == '__main__':
     # Initialize CLI parser
     cli = argparse.ArgumentParser(description='Table of contents populator for markdown files.')
     cli.add_argument('file', nargs='+', help='Markdown file(s) to process')
+    cli.add_argument('-o', '--output',
+                     help='Output file. Error if used with multiple source files. Default: replaces source files')
 
-    # Parse and process CLI arguments
+    # Parse and validate CLI arguments
     args = cli.parse_args()
+    if args.output and len(args.file) > 1:
+        print('Error: output option can only be used in single file mode.', sys.stderr)
+        exit(1)
 
     # Run
     for filename in args.file:
-        transform_file_inplace(filename)
+        if args.output:
+            transform_file(filename, args.output)
+        else:
+            transform_file(filename, filename)

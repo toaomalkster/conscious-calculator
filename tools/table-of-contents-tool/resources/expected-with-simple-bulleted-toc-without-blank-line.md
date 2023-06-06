@@ -2,6 +2,13 @@
 Welcome to this test text.
 It'll be interesting to see what you find.
 
+Contents:
+* [I. Background](#i-background)
+  * [I.1 Did you know](#i1-did-you-know)
+  * [I.2 But then again - let's do this](#i2-but-then-again---lets-do-this)
+* [II. Somewhere completely different](#ii-somewhere-completely-different)
+  * [II.1 Hello from Earth](#ii1-hello-from-earth)
+
 # I. Background
 
 ## I.1 Did you know
@@ -15,7 +22,7 @@ Praesent malesuada dolor neque, nec vehicula mi malesuada ac. Fusce sit amet era
 #### Too tiny
 Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. In et velit diam. Nullam ut nibh odio. Pellentesque eget neque porttitor, vehicula orci vitae, dapibus quam. Duis ac arcu porta, suscipit ante tempus, eleifend ipsum. Integer ac porta felis. Aenean condimentum, dolor quis ultricies sodales, mauris nunc viverra elit, eu faucibus dolor velit sed purus. Aliquam neque eros, suscipit vel tempor vel, malesuada quis eros. Duis luctus rutrum tempor. Nunc facilisis ac mi a euismod. Vestibulum ipsum mauris, pharetra id arcu nec, imperdiet luctus sapien. Nunc velit enim, pulvinar at ex id, condimentum porttitor odio.
 
-## I.2 But then again
+## I.2 But then again - let's do this
 Aenean eget elit a enim auctor fermentum. Nullam id leo sollicitudin, commodo purus non, eleifend tellus. Morbi rhoncus eu purus et blandit. Proin dignissim erat eget nisi placerat, a efficitur turpis lobortis. Nunc a imperdiet risus. Sed vestibulum elit et ultricies imperdiet. Ut est nulla, rutrum condimentum efficitur at, semper id arcu. Nullam tempus suscipit ligula non sodales. Praesent velit justo, venenatis eu malesuada eget, aliquet ut libero.
 
 Pellentesque rhoncus nibh nec sollicitudin euismod. Quisque ullamcorper tempus malesuada. Sed euismod velit vitae quam consectetur vehicula. Morbi felis leo, ullamcorper quis massa eget, ultrices luctus lacus. Duis vel feugiat justo. Aliquam nec nunc turpis. Vivamus bibendum scelerisque ante, at vulputate dolor tempus a.
