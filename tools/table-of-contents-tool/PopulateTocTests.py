@@ -28,7 +28,7 @@ class MyTestCase(unittest.TestCase):
     def test_does_not_generate_given_no_toc_marker(self):
         name = inspect.stack()[0][3]
         PopulateToc.transform_file(
-            'text-without-toc.md',
+            'resources/text-without-toc.md',
             f'target/{name}.output',
             None,
             None)
@@ -52,7 +52,7 @@ class MyTestCase(unittest.TestCase):
             f'target/{name}.output',
             'resources/text-with-simple-bulleted-toc.md')
 
-    def test_replaces_simple_bulleted_toc(self):
+    def test_replaces_existing_simple_bulleted_toc(self):
         name = inspect.stack()[0][3]
         PopulateToc.transform_file(
             'resources/text-with-simple-bulleted-toc.md',
@@ -63,7 +63,24 @@ class MyTestCase(unittest.TestCase):
             f'target/{name}.output',
             'resources/text-with-simple-bulleted-toc.md')
 
-    def test_replaces_toc_with_top_level_chapters(self):
+    def test_generates_new_toc_with_top_level_chapters(self):
+        name = inspect.stack()[0][3]
+        self.copy_text_with_new_toc(
+            'resources/text-with-top-level-chapters.md',
+            f'target/{name}.src',
+            toc_lines=[
+                'toc\n'
+            ])
+        PopulateToc.transform_file(
+            f'target/{name}.src',
+            f'target/{name}.output',
+            True,
+            None)
+        self.assert_has_expected_content(
+            f'target/{name}.output',
+            'resources/text-with-top-level-chapters.md')
+
+    def test_replaces_existing_toc_with_top_level_chapters(self):
         name = inspect.stack()[0][3]
         PopulateToc.transform_file(
             'resources/text-with-top-level-chapters.md',
@@ -74,7 +91,24 @@ class MyTestCase(unittest.TestCase):
             f'target/{name}.output',
             'resources/text-with-top-level-chapters.md')
 
-    def test_replaces_toc_with_parts(self):
+    def test_generates_new_toc_with_parts(self):
+        name = inspect.stack()[0][3]
+        self.copy_text_with_new_toc(
+            'resources/text-with-parts.md',
+            f'target/{name}.src',
+            toc_lines=[
+                'toc\n'
+            ])
+        PopulateToc.transform_file(
+            f'target/{name}.src',
+            f'target/{name}.output',
+            True,
+            True)
+        self.assert_has_expected_content(
+            f'target/{name}.output',
+            'resources/text-with-parts.md')
+
+    def test_replaces_existing_toc_with_parts(self):
         name = inspect.stack()[0][3]
         PopulateToc.transform_file(
             'resources/text-with-parts.md',
@@ -91,7 +125,6 @@ class MyTestCase(unittest.TestCase):
         if actual != expected:
             diff = ''.join(difflib.ndiff(actual, expected))
             self.fail(f'{actual_file} has wrong content:\n{diff}')
-
 
     def copy_text_with_new_toc(self, source_file, dest_file, toc_lines):
         try:
