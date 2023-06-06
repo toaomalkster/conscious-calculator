@@ -1,6 +1,6 @@
 # Introduction
-Welcome to this test text.
-It'll be interesting to see what you find.
+This text illustrates the contents rendered with top-level chapters creating groupings within the rendering.
+The top-level chapters are listed without bullet points, and with blank lines between groupings.
 
 Contents:
 

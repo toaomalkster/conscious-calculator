@@ -1,6 +1,5 @@
 # Introduction
-Welcome to this test text.
-It'll be interesting to see what you find.
+This text illustrates a file that contains no table of contents. It should be automatically skipped without modifying the file.
 
 # I. Background
 

@@ -1,6 +1,5 @@
 # Introduction
-Welcome to this test text.
-It'll be interesting to see what you find.
+This text illustrates the contents rendered as a simple bulleted list.
 
 Contents:
 * [I. Background](#i-background)
