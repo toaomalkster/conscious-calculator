@@ -1,4 +1,5 @@
 # Table of Contents Tool
+Python 3 CLI for generating and updating tables of contents within markdown files.
 
 ## Marking TOC location
 The text file requires two things to indicate (a) that a TOC should be
@@ -77,10 +78,22 @@ The purpose here is to ensure that CLI args to setup the style don't have to be
 repeated when re-running the command. Consequently, I intentionally don't try to
 guess any style if there are no existing TOC entries.
 
-## Setup in Eclipse IDE
-I've never actually got compilation to work. I just use it for syntax validation and run from the command line via groovysh or groovyConsole.
+## Setup in PyCharm
+Open the existing folder as a new project.
+
+Create run configurations to supply specific CLI args as required.
+
+Right-click `PopulateTocTests.py` and run to run the unit tests.
+
+## Running from command line
+1. Activate the venv (optional)
+2. `python PopulateToc.py` to run CLI
+3. `python PopulateTocTests.py` to run the unit tests
 
 ## Python Venv
+Latest update: I currently have no libraries required, so this script works in any standard Python 3 installation.
+You can still choose to follow the below to create a virtualenv and load the empty requirements if you wish. 
+
 Create venv:
 ```
 python -m venv venv
@@ -96,6 +109,7 @@ Load requirements:
 pip install -r requirements.txt
 ```
 
+
 Stop venv:
 ```
 deactivate
@@ -105,3 +119,5 @@ Update `requirements.txt` from output of following command:
 ```
 pip freeze
 ```
+
+#
