@@ -25,6 +25,15 @@ class MyTestCase(unittest.TestCase):
             except Exception as e:
                 print(f'Error while removing old file from target: {file} - {e}')
 
+    def test_does_not_generate_given_no_toc_marker(self):
+        name = inspect.stack()[0][3]
+        PopulateToc.transform_file(
+            'text-without-toc.md',
+            f'target/{name}.output',
+            None)
+        if os.path.exists(f'target/{name}.output'):
+            self.fail('Output file was generated when should not have been')
+
     def test_generates_new_simple_bulleted_toc(self):
         name = inspect.stack()[0][3]
         self.copy_text_with_new_toc(
