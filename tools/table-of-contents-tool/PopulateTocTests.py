@@ -30,6 +30,7 @@ class MyTestCase(unittest.TestCase):
         PopulateToc.transform_file(
             'text-without-toc.md',
             f'target/{name}.output',
+            None,
             None)
         if os.path.exists(f'target/{name}.output'):
             self.fail('Output file was generated when should not have been')
@@ -45,6 +46,7 @@ class MyTestCase(unittest.TestCase):
         PopulateToc.transform_file(
             f'target/{name}.src',
             f'target/{name}.output',
+            None,
             None)
         self.assert_has_expected_content(
             f'target/{name}.output',
@@ -55,6 +57,7 @@ class MyTestCase(unittest.TestCase):
         PopulateToc.transform_file(
             'resources/text-with-simple-bulleted-toc.md',
             f'target/{name}.output',
+            None,
             None)
         self.assert_has_expected_content(
             f'target/{name}.output',
@@ -65,10 +68,22 @@ class MyTestCase(unittest.TestCase):
         PopulateToc.transform_file(
             'resources/text-with-top-level-chapters.md',
             f'target/{name}.output',
+            None,
             None)
         self.assert_has_expected_content(
             f'target/{name}.output',
             'resources/text-with-top-level-chapters.md')
+
+    def test_replaces_toc_with_parts(self):
+        name = inspect.stack()[0][3]
+        PopulateToc.transform_file(
+            'resources/text-with-parts.md',
+            f'target/{name}.output',
+            None,
+            None)
+        self.assert_has_expected_content(
+            f'target/{name}.output',
+            'resources/text-with-parts.md')
 
     def assert_has_expected_content(self, expected_file, actual_file):
         expected = text_of(expected_file)

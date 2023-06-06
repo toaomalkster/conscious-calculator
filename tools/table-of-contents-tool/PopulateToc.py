@@ -1,3 +1,5 @@
+# See readme.md for description.
+
 # References:
 # https://www.programiz.com/python-programming/regex
 import re
@@ -50,36 +52,58 @@ def get_toc_line_bounds(lines):
     return bounds
 
 
-# Tests whether the existing toc lines use the 'top' style.
-# Under the 'top' style, top-level chapters or parts are listed without bullet points. Their sub-sections
-# are listed as bullet points each under top-level entry, creating a visual group. And there are line-spaces between
-# each visual group.
-def is_toc_style_top(toc_lines):
-    return toc_lines[0].startswith('[')
+# Tests whether the existing toc entries use the 'top' style.
+def is_toc_style_top(toc_entries):
+    return toc_entries[0].startswith('[')
+
+
+# Tests whether the existing toc entries use the 'parts' style.
+# This is assumed if we can find an early example where the top-level entry uses top style, is prefixed with "Part ",
+# and is followed by a sub-entry.
+def is_toc_style_parts(toc_entries):
+    for i, entry in enumerate(toc_entries):
+        if entry.startswith('[Part ') and (i+1) < len(toc_entries) and toc_entries[i+1].startswith('* '):
+            # early stopping case: found definite positive example
+            return True
+        if entry.startswith('[') and not entry.startswith('[Part '):
+            # early stopping case: found definite negative before finding a positive example
+            return False
+    # default assumption
+    return False
 
 
 # Searches lines given capturing any headings and turning them into TOC entries.
 # Searches the entire contents given, so any non-indexed header section needs to be stripped beforehand.
 # return [lines-with-newline-terminators]
-def get_toc_entries(lines, use_top):
+def get_toc_entries(lines, use_top, use_parts):
     entries = []
     first = True
     for line in lines:
         match = re.match(r'^(#+) .*$', line)
         if match and len(match.group(1)) <= 3:
-            entries.append(convert_heading_to_toc_entry(line, first, use_top))
+            entries.append(convert_heading_to_toc_entry(line, first, use_top, use_parts))
             first = False
     return entries
 
 
 # returns newline-terminated string
-def convert_heading_to_toc_entry(line, first, use_top):
+def convert_heading_to_toc_entry(line, first, use_top, use_parts):
     match = re.match(r'^(#+) (.*)$', line)
     level = len(match.group(1))
     heading = match.group(2)
     href = convert_heading_to_href(heading)
-    if use_top:
+
+    # adjust for 'top' and 'parts'
+    if use_parts and level == 1 and heading.startswith('Part '):
+        level = 0
+    if use_parts and not use_top:
+        # While not using 'top', levels should start at 1
+        level += 1
+    elif use_top and not use_parts:
+        # While using 'top' without 'parts' then level 1 headings should be shifted to level 0
         level -= 1
+
+    # render according to level
     if level <= 0:
         prefix_line = '' if first else '\n'
         return f'{prefix_line}[{heading}]({href})\n'
@@ -103,7 +127,7 @@ def convert_heading_to_href(heading):
     return f'#{heading}'
 
 
-def transform_file(path, output, use_top):
+def transform_file(path, output, use_top, use_parts):
     # read all lines and identify whether file should be processed
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -116,8 +140,12 @@ def transform_file(path, output, use_top):
     # process
     print(f'{path} - Processing')
     existing_toc = lines[toc_bounds[0]:toc_bounds[1]]
-    use_top = use_top if use_top is not None else is_toc_style_top(existing_toc)
-    entries = get_toc_entries(lines[toc_bounds[1]:], use_top)
+    use_parts = use_parts if use_parts is not None else is_toc_style_parts(existing_toc)
+    if use_parts:
+        use_top = use_top if use_top is not None else True
+    else:
+        use_top = use_top if use_top is not None else is_toc_style_top(existing_toc)
+    entries = get_toc_entries(lines[toc_bounds[1]:], use_top, use_parts)
 
     # save result, either overwriting original file or saving to a new file
     with open(output, 'w', encoding='utf-8') as f:
@@ -139,7 +167,10 @@ if __name__ == '__main__':
                      help='Output file. Error if used with multiple source files. Default: replaces source files')
     cli.add_argument('-t', '--top', choices=['true', 'false'], const='true', default=None,
                      help='Top level chapters or parts should appear without bullet points.'
-                          ' Default: infers from existing text')
+                          ' Default: infers from existing TOC entries')
+    cli.add_argument('-p', '--parts', choices=['true', 'false'], const='true', default=None,
+                     help='Parts use the same h1 header as chapters. Implies top, but can be overridden.'
+                          ' Default: infers from existing TOC entries')
 
     # Parse and validate CLI arguments
     args = cli.parse_args()
@@ -149,7 +180,5 @@ if __name__ == '__main__':
 
     # Run
     for filename in args.file:
-        if args.output:
-            transform_file(filename, args.output, args.top)
-        else:
-            transform_file(filename, filename, args.top)
+        dest_file = args.output if args.output else filename
+        transform_file(filename, dest_file, args.top, args.parts)

@@ -1,11 +1,19 @@
 # Introduction
-Welcome to this test text.
-It'll be interesting to see what you find.
+This text illustrates special handling for parts that use the same top-level header level as chapters but are otherwise visually
+distinguished (in this case using horizontal lines).
+
+Parts are identified by the "Part " prefix.
 
 Contents:
 
-[Part I. Background](#)
-* [I.1 Did you know](#)
+[Part I. Background](#part-i-background)
+* [I.1 Did you know](#i1-did-you-know)
+* [I.2 But then again - let's do this](#i2-but-then-again---lets-do-this)
+
+[Part II. Somewhere completely different](#part-ii-somewhere-completely-different)
+* [II.1 Hello from Earth](#ii1-hello-from-earth)
+
+---
 
 # Part I. Background
 
@@ -24,6 +32,8 @@ Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos
 Aenean eget elit a enim auctor fermentum. Nullam id leo sollicitudin, commodo purus non, eleifend tellus. Morbi rhoncus eu purus et blandit. Proin dignissim erat eget nisi placerat, a efficitur turpis lobortis. Nunc a imperdiet risus. Sed vestibulum elit et ultricies imperdiet. Ut est nulla, rutrum condimentum efficitur at, semper id arcu. Nullam tempus suscipit ligula non sodales. Praesent velit justo, venenatis eu malesuada eget, aliquet ut libero.
 
 Pellentesque rhoncus nibh nec sollicitudin euismod. Quisque ullamcorper tempus malesuada. Sed euismod velit vitae quam consectetur vehicula. Morbi felis leo, ullamcorper quis massa eget, ultrices luctus lacus. Duis vel feugiat justo. Aliquam nec nunc turpis. Vivamus bibendum scelerisque ante, at vulputate dolor tempus a.
+
+---
 
 # Part II. Somewhere completely different
 Etiam bibendum eget mi varius imperdiet. Nunc metus diam, mollis id mattis vel, molestie in ipsum. Vivamus congue eu lorem at porta. Duis ullamcorper nulla eu neque hendrerit pellentesque. Sed et tortor gravida, tincidunt magna sit amet, lacinia velit. Sed in erat at turpis tincidunt hendrerit. Cras non sem elementum, vestibulum nisi et, congue leo. Aliquam quis velit viverra neque auctor vestibulum et ac urna. Quisque id quam ac nunc feugiat pharetra vel ornare lectus.
