@@ -27,7 +27,8 @@ class MyTestCase(unittest.TestCase):
     def test_generates_new_simple_bulleted_toc(self):
         PopulateToc.transform_file(
             'resources/text-with-toc-marker-only.md',
-            'target/text-with-toc-marker-only.output')
+            'target/text-with-toc-marker-only.output',
+            None)
         self.assert_has_expected_content(
             'target/text-with-toc-marker-only.output',
             'resources/expected-with-simple-bulleted-toc-with-blank-line.md')
@@ -35,10 +36,20 @@ class MyTestCase(unittest.TestCase):
     def test_replaces_simple_bulleted_toc(self):
         PopulateToc.transform_file(
             'resources/text-with-simple-bulleted-toc.md',
-            'target/text-with-simple-bulleted-toc.output')
+            'target/text-with-simple-bulleted-toc.output',
+            None)
         self.assert_has_expected_content(
             'target/text-with-simple-bulleted-toc.output',
             'resources/expected-with-simple-bulleted-toc-without-blank-line.md')
+
+    def test_replaces_toc_with_top_level_chapters(self):
+        PopulateToc.transform_file(
+            'resources/text-with-top-level-chapters.md',
+            'target/text-with-top-level-chapters.output',
+            None)
+        self.assert_has_expected_content(
+            'target/text-with-top-level-chapters.output',
+            'resources/expected-with-top-level-chapters.md')
 
     def assert_has_expected_content(self, expected_file, actual_file):
         expected = text_of(expected_file)

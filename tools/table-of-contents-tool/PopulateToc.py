@@ -47,26 +47,42 @@ def get_toc_line_bounds(lines):
     return bounds
 
 
+# Tests whether the existing toc lines use the 'top' style.
+# Under the 'top' style, top-level chapters or parts are listed without bullet points. Their sub-sections
+# are listed as bullet points each under top-level entry, creating a visual group. And there are line-spaces between
+# each visual group.
+def is_toc_style_top(toc_lines):
+    return toc_lines[0].startswith('[')
+
+
 # Searches lines given capturing any headings and turning them into TOC entries.
 # Searches the entire contents given, so any non-indexed header section needs to be stripped beforehand.
 # return [lines-with-newline-terminators]
-def get_toc_entries(lines):
+def get_toc_entries(lines, use_top):
     entries = []
+    first = True
     for line in lines:
         match = re.match(r'^(#+) .*$', line)
         if match and len(match.group(1)) <= 3:
-            entries.append(convert_heading_to_toc_entry(line))
+            entries.append(convert_heading_to_toc_entry(line, first, use_top))
+            first = False
     return entries
 
 
 # returns newline-terminated string
-def convert_heading_to_toc_entry(line):
+def convert_heading_to_toc_entry(line, first, use_top):
     match = re.match(r'^(#+) (.*)$', line)
     level = len(match.group(1))
     heading = match.group(2)
     href = convert_heading_to_href(heading)
-    indent = '  ' * (level - 1)
-    return f'{indent}* [{heading}]({href})\n'
+    if use_top:
+        level -= 1
+    if level <= 0:
+        prefix_line = '' if first else '\n'
+        return f'{prefix_line}[{heading}]({href})\n'
+    else:
+        indent = '  ' * (level - 1)
+        return f'{indent}* [{heading}]({href})\n'
 
 
 # eg: "II.1 Interlude: Environment, Body, and Control Processes (first part)"
@@ -84,7 +100,7 @@ def convert_heading_to_href(heading):
     return f'#{heading}'
 
 
-def transform_file(path, output):
+def transform_file(path, output, use_top):
     # read all lines and identify whether file should be processed
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -96,7 +112,9 @@ def transform_file(path, output):
 
     # process
     print(f'{path} - Processing')
-    entries = get_toc_entries(lines[toc_bounds[1]:])
+    existing_toc = lines[toc_bounds[0]:toc_bounds[1]]
+    use_top = use_top if use_top is not None else is_toc_style_top(existing_toc)
+    entries = get_toc_entries(lines[toc_bounds[1]:], use_top)
 
     # save result, either overwriting original file or saving to a new file
     with open(output, 'w', encoding='utf-8') as f:
@@ -116,6 +134,9 @@ if __name__ == '__main__':
     cli.add_argument('file', nargs='+', help='Markdown file(s) to process')
     cli.add_argument('-o', '--output',
                      help='Output file. Error if used with multiple source files. Default: replaces source files')
+    cli.add_argument('-t', '--top', choices=['true', 'false'], const='true', default=None,
+                     help='Top level chapters or parts should appear without bullet points.'
+                          ' Default: infers from existing text')
 
     # Parse and validate CLI arguments
     args = cli.parse_args()
@@ -126,6 +147,6 @@ if __name__ == '__main__':
     # Run
     for filename in args.file:
         if args.output:
-            transform_file(filename, args.output)
+            transform_file(filename, args.output, args.top)
         else:
-            transform_file(filename, filename)
+            transform_file(filename, filename, args.top)
