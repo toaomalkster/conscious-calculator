@@ -33,11 +33,14 @@ def get_toc_line_bounds(lines):
     bounds[0] = idx
 
     # find end of existing toc entries
+    # - find last line that looks like an existing toc entry
+    # - stop looking when encountering a major new section
     found = False
     idx += 1
     for i, line in enumerate(lines[idx:], start=idx):
-        if not line.strip() or line.startswith('#'):
-            idx = i
+        if line.strip().startswith('[') or line.strip().startswith('* '):
+            idx = i+1
+        if line.startswith('#') or line.startswith('---'):
             found = True
             break
     if not found:
