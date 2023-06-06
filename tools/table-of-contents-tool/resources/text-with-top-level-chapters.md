@@ -4,8 +4,12 @@ It'll be interesting to see what you find.
 
 Contents:
 
-[I. Background](#)
-* [I.1 Did you know](#)
+[I. Background](#i-background)
+* [I.1 Did you know](#i1-did-you-know)
+* [I.2 But then again - let's do this](#i2-but-then-again---lets-do-this)
+
+[II. Somewhere completely different](#ii-somewhere-completely-different)
+* [II.1 Hello from Earth](#ii1-hello-from-earth)
 
 # I. Background
 

@@ -3,9 +3,11 @@ Welcome to this test text.
 It'll be interesting to see what you find.
 
 Contents:
-* item 1
-  * item 2
-* item 3
+* [I. Background](#i-background)
+  * [I.1 Did you know](#i1-did-you-know)
+  * [I.2 But then again - let's do this](#i2-but-then-again---lets-do-this)
+* [II. Somewhere completely different](#ii-somewhere-completely-different)
+  * [II.1 Hello from Earth](#ii1-hello-from-earth)
 
 # I. Background
 
